@@ -1,0 +1,17 @@
+{
+  "name": "scoutopoly",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --open /scoutopoly.html",
+    "build": "node scripts/build.mjs",
+    "preview": "vite preview --host 127.0.0.1 --outDir dist"
+  },
+  "devDependencies": {
+    "vite": "^5.4.14"
+  },
+  "dependencies": {
+    "firebase": "^10.14.1"
+  }
+}
