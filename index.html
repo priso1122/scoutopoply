@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scoutopoly | Game Master Control Panel & Game Dashboard</title>
+    <title>Scoutopoly | Game Master Control Panel & Multiplayer Board Game</title>
     <style>
         /* =========================================================
            CSS VARIABLES & RESET
@@ -54,7 +54,7 @@
         .btn {
             padding: 12px 24px; border: none; border-radius: 8px; font-weight: 600;
             cursor: pointer; transition: all 0.3s ease; text-transform: uppercase;
-            letter-spacing: 1px; display: flex; align-items: center; justify-content: center; gap: 8px;
+            letter-spacing: 1px; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
         }
         .btn:disabled { opacity: 0.6; cursor: not-allowed; }
         
@@ -147,13 +147,11 @@
         #view-admin .dashboard-content { padding: 30px; max-width: 1400px; margin: 0 auto; width: 100%; }
         .admin-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 25px; flex-wrap: wrap; gap: 15px; }
         
-        /* Stats Grid */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
         .stat-card { padding: 20px; border-radius: var(--border-radius); text-align: center; border: 1px solid var(--glass-border); background: var(--glass-bg); }
         .stat-card h3 { font-size: 0.85rem; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
         .stat-card .value { font-size: 2.2rem; font-weight: 800; color: var(--accent-gold); }
 
-        /* Main Admin Layout (Table + Activity) */
         .admin-layout { display: grid; grid-template-columns: 3fr 1fr; gap: 20px; }
         @media (max-width: 1024px) { .admin-layout { grid-template-columns: 1fr; } }
 
@@ -161,7 +159,6 @@
         .search-input { flex: 1; min-width: 250px; margin-bottom: 0; }
         .filter-select { width: 180px; margin-bottom: 0; }
 
-        /* Table */
         .table-container { overflow-x: auto; background: var(--glass-bg); border-radius: var(--border-radius); border: 1px solid var(--glass-border); }
         table { width: 100%; border-collapse: collapse; text-align: left; }
         th, td { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: middle; }
@@ -171,7 +168,6 @@
         .user-cell { display: flex; align-items: center; gap: 12px; }
         .mini-avatar { width: 35px; height: 35px; background: rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1rem; color: var(--accent-gold); }
         
-        /* Role & Status Badges */
         .badge { padding: 5px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; letter-spacing: 0.5px; display: inline-flex; align-items: center; gap: 5px; }
         .badge-gm { background: rgba(155, 89, 182, 0.2); color: var(--accent-purple); border: 1px solid rgba(155, 89, 182, 0.3); }
         .badge-player { background: rgba(255, 255, 255, 0.1); color: #FFF; border: 1px solid rgba(255, 255, 255, 0.2); }
@@ -179,7 +175,6 @@
         .status-active { color: var(--success); }
         .status-disabled { color: var(--danger); }
 
-        /* Action Menu */
         .action-menu { position: relative; display: inline-block; }
         .action-btn { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; padding: 5px 10px; }
         .action-content { display: none; position: absolute; right: 0; background: var(--primary-main); min-width: 160px; box-shadow: 0 8px 16px rgba(0,0,0,0.5); border-radius: 8px; z-index: 100; border: 1px solid var(--glass-border); overflow: hidden; }
@@ -188,7 +183,6 @@
         .action-content a:hover { background: rgba(255,255,255,0.1); }
         .action-content a.text-danger { color: var(--danger); }
 
-        /* Activity Feed */
         .activity-feed { background: var(--glass-bg); border-radius: var(--border-radius); border: 1px solid var(--glass-border); padding: 20px; height: fit-content; }
         .activity-feed h3 { color: var(--accent-gold); margin-bottom: 15px; font-size: 1.1rem; }
         .activity-list { list-style: none; display: flex; flex-direction: column; gap: 15px; }
@@ -213,11 +207,48 @@
         .play-btn-card { grid-column: 1 / -1; background: linear-gradient(135deg, var(--accent-gold) 0%, #D4AC0D 100%); color: var(--primary-dark); text-align: center; cursor: pointer; transition: transform 0.3s, box-shadow 0.3s; }
         .play-btn-card:hover { transform: scale(1.02); box-shadow: 0 10px 30px rgba(244, 208, 63, 0.4); }
         
-        /* Role-Specific Panels */
         .role-panel { margin-top: 20px; padding: 25px; border-radius: var(--border-radius); background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); }
         .role-panel h3 { margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
         .role-panel-gm h3 { color: var(--accent-purple); }
         .role-actions { display: flex; gap: 15px; flex-wrap: wrap; }
+
+        /* =========================================================
+           SCOUTOPOLY ROOMS & LOBBY VIEW
+           ========================================================= */
+        #view-rooms .dashboard-content { padding: 30px; max-width: 1000px; margin: 0 auto; width: 100%; }
+        .rooms-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px; }
+        .rooms-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .room-card { padding: 20px; border-radius: var(--border-radius); background: var(--glass-bg); border: 1px solid var(--glass-border); display: flex; flex-direction: column; justify-content: space-between; }
+
+        /* =========================================================
+           SCOUTOPOLY GAME BOARD & PLAY VIEW
+           ========================================================= */
+        #view-board { padding: 0; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+        .game-topbar { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; background: rgba(0,0,0,0.6); border-bottom: 1px solid var(--glass-border); font-size: 0.9rem; }
+        .game-main-layout { display: grid; grid-template-columns: 1fr 350px; flex: 1; overflow: hidden; }
+        @media (max-width: 1100px) { .game-main-layout { grid-template-columns: 1fr; overflow-y: auto; } }
+
+        /* Board Arena */
+        .board-arena { position: relative; background: #0c2b18; display: grid; grid-template-columns: repeat(11, 1fr); grid-template-rows: repeat(11, 1fr); padding: 10px; gap: 2px; width: 100%; height: 100%; max-height: calc(100vh - 60px); aspect-ratio: 1/1; margin: auto; }
+        .board-center { grid-column: 2 / 11; grid-row: 2 / 11; background: rgba(0,0,0,0.3); border: 2px dashed rgba(255,255,255,0.2); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; z-index: 1; }
+        .board-space { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 4px; padding: 4px; font-size: 0.7rem; display: flex; flex-direction: column; align-items: center; justify-content: space-between; text-align: center; position: relative; overflow: hidden; }
+        .board-space .prop-color { height: 8px; width: 100%; border-radius: 2px; margin-bottom: 2px; }
+        .board-space .space-name { font-weight: bold; font-size: 0.65rem; line-height: 1.1; }
+        .board-space .space-price { font-size: 0.6rem; color: var(--accent-gold); }
+        .token-marker { display: inline-flex; font-size: 1rem; margin: 1px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+
+        /* Game Side Panel */
+        .game-side-panel { background: rgba(0,0,0,0.5); border-left: 1px solid var(--glass-border); display: flex; flex-direction: column; padding: 20px; overflow-y: auto; gap: 20px; }
+        .dice-box { background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); border-radius: 10px; padding: 15px; text-align: center; }
+        .dice-container { display: flex; justify-content: center; gap: 15px; margin: 15px 0; font-size: 2.5rem; }
+        .die { background: white; color: var(--primary-dark); width: 60px; height: 60px; border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); font-weight: bold; transition: transform 0.3s; }
+        .die.rolling { animation: shake 0.5s infinite ease-in-out; }
+        @keyframes shake { 0% { transform: rotate(0deg); } 25% { transform: rotate(15deg); } 50% { transform: rotate(-15deg); } 75% { transform: rotate(10deg); } 100% { transform: rotate(0deg); } }
+
+        .player-turn-list { display: flex; flex-direction: column; gap: 10px; }
+        .player-turn-card { background: rgba(255,255,255,0.05); padding: 10px 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; }
+        .player-turn-card.active-player { border-color: var(--accent-gold); background: rgba(244, 208, 63, 0.1); }
+        .game-log-box { background: rgba(0,0,0,0.3); border-radius: 8px; padding: 10px; height: 150px; overflow-y: auto; font-size: 0.8rem; display: flex; flex-direction: column; gap: 6px; }
 
         /* =========================================================
            MODALS
@@ -233,7 +264,6 @@
         .form-group { flex: 1; }
         .form-group label { display: block; margin-bottom: 5px; font-size: 0.85rem; color: rgba(255,255,255,0.8); }
         
-        /* Profile View inside Modal */
         .profile-view-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; }
 
         /* =========================================================
@@ -392,23 +422,122 @@
             </div>
 
             <div class="dashboard-grid">
-                <div class="card glass-panel play-btn-card" onclick="app.showComingSoon('Game Room')">
-                    <div class="stat-huge">🎲 PLAY</div>
-                    <div class="stat-label">Enter the Game Board</div>
+                <div class="card glass-panel play-btn-card" onclick="scoutopolyApp.openRoomsView()">
+                    <div class="stat-huge">🎲 PLAY SCOUTOPOLY</div>
+                    <div class="stat-label">Enter Game Rooms & Lobby</div>
                 </div>
                 <div class="card glass-panel"><div class="card-title">⭐ Total Score</div><div class="stat-huge" id="stat-score">0</div><div class="stat-label">Scoutopoly Points</div></div>
                 <div class="card glass-panel"><div class="card-title">📊 Games Played</div><div class="stat-huge" id="stat-games">0</div><div class="stat-label"><span id="stat-wins">0</span> Won / <span id="stat-losses">0</span> Lost</div></div>
                 <div class="card glass-panel"><div class="card-title">🏆 Achievements</div><div class="stat-huge" id="stat-achievements">0</div><div class="stat-label">Badges Earned</div></div>
             </div>
 
-            <!-- Dynamic Role Panels Injected Here -->
             <div id="role-specific-panels"></div>
-
         </div>
     </div>
 
     <!-- =========================================================
-         MODALS (GAME MASTER CONTROLS)
+         VIEW: SCOUTOPOLY ROOMS LOBBY
+         ========================================================= -->
+    <div id="view-rooms" class="view hidden">
+        <nav class="navbar">
+            <div class="nav-brand">🎲 SCOUTOPOLY LOBBY</div>
+            <div class="nav-user">
+                <button class="btn btn-outline" onclick="scoutopolyApp.returnToDashboard()" style="padding: 8px 16px; font-size: 0.85rem;">Dashboard</button>
+            </div>
+        </nav>
+        <div class="dashboard-content fade-in" style="max-width: 1000px; margin: 0 auto; width: 100%; padding: 30px;">
+            <div class="rooms-header">
+                <div>
+                    <h1>⛺ GAME ROOMS</h1>
+                    <p style="color: var(--accent-cyan);">Join an active game room or create your own Scoutopoly expedition!</p>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-outline" onclick="scoutopolyApp.openHowToPlay()">❓ HOW TO PLAY</button>
+                    <button class="btn btn-gold" onclick="scoutopolyApp.openCreateRoomModal()">+ CREATE ROOM</button>
+                </div>
+            </div>
+            <div class="rooms-grid" id="rooms-list-container">
+                <div class="room-card glass-panel">Loading game rooms...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================================
+         VIEW: SCOUTOPOLY GAME BOARD
+         ========================================================= -->
+    <div id="view-board" class="view hidden">
+        <div class="game-topbar">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <span style="font-weight: 800; color: var(--accent-gold);">⛺ SCOUTOPOLY ROOM: <span id="board-room-name">-</span></span>
+                <span class="badge badge-gm" id="board-status-badge">WAITING</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <span id="board-player-coins" style="font-weight: bold; color: var(--accent-cyan);">💰 1,500 Scout Coins</span>
+                <button class="btn btn-outline" style="padding: 4px 10px; font-size: 0.75rem;" onclick="scoutopolyApp.openHowToPlay()">❓ Rules</button>
+                <button class="btn btn-danger" style="padding: 4px 10px; font-size: 0.75rem;" onclick="scoutopolyApp.leaveRoom()">Leave Game</button>
+            </div>
+        </div>
+
+        <div class="game-main-layout">
+            <!-- Board Arena -->
+            <div style="display: flex; align-items: center; justify-content: center; padding: 10px; overflow: hidden;">
+                <div class="board-arena" id="scoutopoly-board-grid">
+                    <!-- Central Logo & Actions -->
+                    <div class="board-center">
+                        <div style="font-size: 1.8rem; font-weight: 800; color: var(--accent-gold); margin-bottom: 5px;">SCOUTOPOLY</div>
+                        <div style="font-size: 0.8rem; color: var(--accent-cyan); margin-bottom: 15px;">ADVENTURE AWAITS</div>
+                        <div id="board-center-action-area">
+                            <p style="font-size: 0.85rem; margin-bottom: 10px;" id="current-turn-indicator">Waiting for game start...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Game Side Panel -->
+            <div class="game-side-panel">
+                <!-- Dice Roller Section -->
+                <div class="dice-box">
+                    <h3 style="color: var(--accent-gold); font-size: 1rem; margin-bottom: 5px;">🎲 DICE ROLL</h3>
+                    <div class="dice-container">
+                        <div class="die" id="die-1">⚀</div>
+                        <div class="die" id="die-2">⚀</div>
+                    </div>
+                    <div id="dice-total-text" style="font-weight: bold; margin-bottom: 15px; color: var(--accent-cyan);">TOTAL: 2</div>
+                    <button class="btn btn-gold" id="roll-dice-btn" onclick="scoutopolyApp.rollDice()" style="width: 100%;" disabled>ROLL DICE</button>
+                    <button class="btn btn-cyan" id="end-turn-btn" onclick="scoutopolyApp.endTurn()" style="width: 100%; margin-top: 10px;" disabled>END TURN</button>
+                </div>
+
+                <!-- Players Status List -->
+                <div>
+                    <h3 style="color: var(--accent-gold); font-size: 0.9rem; margin-bottom: 10px;">👥 PLAYERS IN GAME</h3>
+                    <div class="player-turn-list" id="game-players-list">
+                        <!-- Filled by JS -->
+                    </div>
+                </div>
+
+                <!-- Game Master Panel in Game -->
+                <div id="gm-game-controls" class="hidden" style="background: rgba(155, 89, 182, 0.15); border: 1px solid var(--accent-purple); border-radius: 8px; padding: 15px;">
+                    <h3 style="color: var(--accent-purple); font-size: 0.9rem; margin-bottom: 10px;">👑 GM CONTROLS</h3>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <button class="btn btn-cyan" id="gm-start-btn" onclick="scoutopolyApp.gmStartGame()" style="padding: 8px; font-size: 0.8rem;">▶ START GAME</button>
+                        <button class="btn btn-outline" onclick="scoutopolyApp.gmRestartGame()" style="padding: 8px; font-size: 0.8rem; color: var(--accent-purple); border-color: var(--accent-purple);">🔄 RESTART GAME</button>
+                        <button class="btn btn-danger" onclick="scoutopolyApp.gmEndGame()" style="padding: 8px; font-size: 0.8rem;">🛑 END GAME</button>
+                    </div>
+                </div>
+
+                <!-- Live Game Log -->
+                <div>
+                    <h3 style="color: var(--accent-gold); font-size: 0.9rem; margin-bottom: 10px;">📜 LIVE GAME LOG</h3>
+                    <div class="game-log-box" id="live-game-log">
+                        <div>Welcome to Scoutopoly!</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================================
+         MODALS (GAME MASTER & GAME CONTROLS)
          ========================================================= -->
     
     <!-- 1. CREATE MEMBER MODAL -->
@@ -445,17 +574,86 @@
                         <option value="gameMaster">👑 GAME MASTER</option>
                     </select>
                 </div>
-                <div class="form-row">
-                    <div class="form-group"><label>Nickname (Optional)</label><input type="text" id="new-nickname"></div>
-                    <div class="form-group"><label>Profile Pic URL (Optional)</label><input type="url" id="new-pic"></div>
-                </div>
-                <div class="form-group"><label>Description (Optional)</label><textarea id="new-desc" rows="2"></textarea></div>
                 <button type="submit" class="btn btn-cyan" id="create-btn" style="width: 100%;">CREATE ACCOUNT</button>
             </form>
         </div>
     </div>
 
-    <!-- 2. VIEW PROFILE MODAL -->
+    <!-- 2. CREATE ROOM MODAL -->
+    <div class="modal-overlay" id="create-room-modal">
+        <div class="modal-content" style="max-width: 450px;">
+            <div class="modal-header">
+                <h2>⛺ Create Game Room</h2>
+                <button class="close-modal" onclick="app.closeModal('create-room-modal')">&times;</button>
+            </div>
+            <form id="create-room-form">
+                <div class="form-group"><label>Room Name *</label><input type="text" id="room-name-input" value="Scout Expedition 1" required></div>
+                <div class="form-group"><label>Starting Scout Coins *</label><input type="number" id="room-coins-input" value="1500" min="500" max="5000" step="100" required></div>
+                <div class="form-group">
+                    <label>Choose Your Scout Token *</label>
+                    <select id="room-token-input" required>
+                        <option value="🏕️">🏕️ Tent</option>
+                        <option value="🧭">🧭 Compass</option>
+                        <option value="🎒">🎒 Backpack</option>
+                        <option value="🥾">🥾 Hiking Boot</option>
+                        <option value="🔥">🔥 Campfire</option>
+                        <option value="🪢">🪢 Rope</option>
+                        <option value="🏅">🏅 Scout Badge</option>
+                        <option value="🚐">🚐 Scout Van</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-gold" style="width: 100%;">CREATE & ENTER LOBBY</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 3. HOW TO PLAY MODAL -->
+    <div class="modal-overlay" id="how-to-play-modal">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h2>❓ How to Play Scoutopoly</h2>
+                <button class="close-modal" onclick="app.closeModal('how-to-play-modal')">&times;</button>
+            </div>
+            <div style="font-size: 0.9rem; line-height: 1.6; display: flex; flex-direction: column; gap: 12px; max-height: 60vh; overflow-y: auto; padding-right: 5px;">
+                <p><strong>Scoutopoly</strong> is a multiplayer Scout-themed property board game[cite: 3] inspired by classic Monopoly gameplay[cite: 3].</p>
+                <ul style="padding-left: 20px; display: flex; flex-direction: column; gap: 8px;">
+                    <li><strong>1. Roll Two Dice:</strong> On your turn, roll two 6-sided dice (total 2–12)[cite: 3]. Rolling doubles gives you an extra turn[cite: 3]! Rolling doubles 3 times sends you to Camp Penalty[cite: 3].</li>
+                    <li><strong>2. Movement & Base Camp:</strong> Move your Scout token step by step around the 40 board spaces[cite: 3]. Passing or landing on 🏕️ Base Camp awards +200 Scout Coins[cite: 3].</li>
+                    <li><strong>3. Properties & Rent:</strong> Buy unowned Scout locations when you land on them[cite: 3]. When other players land on your locations, they automatically pay you rent[cite: 3]!</li>
+                    <li><strong>4. Upgrades:</strong> Own a full property color group to upgrade your sites from Empty Site up to ⛺ Tent, 🏕️ Camp, 🔥 Advanced Camp, 🏠 Scout Base, and ⭐ Grand Scout Base to increase rent[cite: 3].</li>
+                    <li><strong>5. Special Spaces:</strong> Land on 🏅 Scout Badge or 🧭 Scout Challenge for random bonuses or penalties[cite: 3]. Transportation and Utility spaces scale in rent based on ownership count[cite: 3].</li>
+                    <li><strong>6. Camp Penalty:</strong> Avoid ⛺ Camp Penalty! Pay a release fee, roll doubles, or use an escape card to get out[cite: 3].</li>
+                    <li><strong>7. Victory:</strong> Manage your Scout Coins wisely, avoid bankruptcy, and be the last remaining player to win the Scoutopoly Championship[cite: 3]!</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. PROPERTY ACTION MODAL -->
+    <div class="modal-overlay" id="property-action-modal">
+        <div class="modal-content" style="max-width: 450px; text-align: center;">
+            <div class="modal-header">
+                <h2 id="prop-modal-title">Property Action</h2>
+                <button class="close-modal" onclick="app.closeModal('property-action-modal')">&times;</button>
+            </div>
+            <div id="prop-modal-body" style="margin-bottom: 25px; line-height: 1.6;"></div>
+            <div id="prop-modal-actions" style="display: flex; gap: 15px; justify-content: center;"></div>
+        </div>
+    </div>
+
+    <!-- 5. EVENT CARD MODAL -->
+    <div class="modal-overlay" id="event-card-modal">
+        <div class="modal-content" style="max-width: 450px; text-align: center;">
+            <div class="modal-header">
+                <h2 id="event-modal-title">🏅 Scout Event</h2>
+                <button class="close-modal" onclick="app.closeModal('event-card-modal')">&times;</button>
+            </div>
+            <div id="event-modal-body" style="font-size: 1.1rem; margin-bottom: 25px; line-height: 1.6;"></div>
+            <button class="btn btn-gold" onclick="app.closeModal('event-card-modal')" style="width: 100%;">CONTINUE</button>
+        </div>
+    </div>
+
+    <!-- 6. VIEW PROFILE MODAL -->
     <div class="modal-overlay" id="view-profile-modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -474,16 +672,10 @@
                 <div><strong>Status:</strong> <span id="vp-status"></span></div>
                 <div><strong>Joined:</strong> <span id="vp-joined"></span></div>
             </div>
-            <div class="profile-view-stats" style="margin-top: 10px; border-top: 1px solid var(--glass-border);">
-                <div><strong>Games Played:</strong> <span id="vp-g-played">0</span></div>
-                <div><strong>Games Won:</strong> <span id="vp-g-won">0</span></div>
-                <div><strong>Money Earned:</strong> <span id="vp-money">0</span></div>
-                <div><strong>Properties:</strong> <span id="vp-props">0</span></div>
-            </div>
         </div>
     </div>
 
-    <!-- 3. EDIT MEMBER MODAL -->
+    <!-- 7. EDIT MEMBER MODAL -->
     <div class="modal-overlay" id="edit-member-modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -518,7 +710,7 @@
         </div>
     </div>
 
-    <!-- 4. CONFIRMATION MODAL -->
+    <!-- 8. CONFIRMATION MODAL -->
     <div class="modal-overlay" id="confirm-modal">
         <div class="modal-content" style="max-width: 400px; text-align: center;">
             <div class="modal-header">
@@ -539,7 +731,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc, collection, getDocs, addDoc, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc, collection, getDocs, addDoc, query, orderBy, limit, serverTimestamp, onSnapshot, runTransaction } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAHgLnVKtjPPo1vT7S48kWx8yi5Qn606vw",
@@ -564,25 +756,6 @@
             console.error("Firebase initialization failed", initErr);
         }
 
-        const rolePermissions = {
-            player: {
-                playGame: true,
-                manageGame: false,
-                moderatePlayers: false,
-                manageAccounts: false,
-                manageRoles: false,
-                accessAdminPanel: false
-            },
-            gameMaster: {
-                playGame: true,
-                manageGame: true,
-                moderatePlayers: true,
-                manageAccounts: true,
-                manageRoles: true,
-                accessAdminPanel: true
-            }
-        };
-
         const roleDisplay = {
             player: { label: '🎮 NORMAL PLAYER', class: 'badge-player' },
             gameMaster: { label: '👑 GAME MASTER', class: 'badge-gm' }
@@ -596,6 +769,8 @@
             viewLogin: document.getElementById('view-login'),
             viewAdmin: document.getElementById('view-admin'),
             viewMember: document.getElementById('view-member'),
+            viewRooms: document.getElementById('view-rooms'),
+            viewBoard: document.getElementById('view-board'),
             toastContainer: document.getElementById('toast-container'),
             loginErrorBox: document.getElementById('login-error-box'),
             loginErrorText: document.getElementById('login-error-text'),
@@ -644,19 +819,14 @@
         // =========================================================
         // AUTHENTICATION & STATE LISTENER WITH CHEF MIGRATION
         // =========================================================
-        console.log("[Scoutopoly] Checking authentication state");
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                console.log("[Scoutopoly] Authenticated user UID:", user.uid);
                 try {
                     let userDocRef = doc(db, "users", user.uid);
                     let userDoc = await getDoc(userDocRef);
-
                     let userData = userDoc.exists() ? userDoc.data() : null;
 
-                    // Automatically migrate or initialize Chef account if username is chef or email matches
                     if (user.email === 'chef@scoutopoly.local' || (userData && userData.username === 'chef')) {
-                        console.log("[Scoutopoly] Migrating / Verifying Chef account to gameMaster");
                         const chefPayload = {
                             username: "chef",
                             displayName: "Chief Administrator",
@@ -666,42 +836,24 @@
                             active: true,
                             updatedAt: serverTimestamp()
                         };
-                        if (!userDoc.exists()) {
-                            chefPayload.createdAt = serverTimestamp();
-                        }
+                        if (!userDoc.exists()) chefPayload.createdAt = serverTimestamp();
                         await setDoc(userDocRef, chefPayload, { merge: true });
-                        
-                        await setDoc(doc(db, "usernames", "chef"), {
-                            username: "chef", email: "chef@scoutopoly.local", uid: user.uid
-                        }, { merge: true });
-
+                        await setDoc(doc(db, "usernames", "chef"), { username: "chef", email: "chef@scoutopoly.local", uid: user.uid }, { merge: true });
                         userDoc = await getDoc(userDocRef);
                         userData = userDoc.data();
                     }
 
                     if (userDoc.exists()) {
                         currentUserData = { id: user.uid, ...userData };
-                        console.log("[Scoutopoly] User role:", currentUserData.role);
-                        
                         if(!currentUserData.active && currentUserData.role !== 'gameMaster') {
                             showLoginError("❌ This account has been disabled. Contact the Game Master.");
                             await auth.signOut();
                             return;
                         }
-
                         hideLoginError();
-                        
-                        // Strict Role Check
                         if (currentUserData.role === 'gameMaster') {
-                            console.log("[Scoutopoly] Opening Game Master control panel");
                             initAdminDashboard();
-                        } else if (currentUserData.role === 'player') {
-                            console.log("[Scoutopoly] Opening member dashboard");
-                            initMemberDashboard(user.uid);
                         } else {
-                            // Fallback if role value is old/invalid
-                            await updateDoc(userDocRef, { role: "player" });
-                            currentUserData.role = "player";
                             initMemberDashboard(user.uid);
                         }
                     } else {
@@ -709,94 +861,49 @@
                         await auth.signOut();
                     }
                 } catch (error) {
-                    console.error("[Scoutopoly] Permission denied", error);
+                    console.error("Auth error", error);
                     showLoginError("❌ Permission denied or profile lookup failed.");
                 }
             } else {
-                console.log("[Scoutopoly] No authenticated user");
                 currentUserData = null;
                 switchView('view-login');
             }
         });
 
-        // =========================================================
-        // LOGIN FORM SUBMISSION HANDLER
-        // =========================================================
         DOM.loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             hideLoginError();
-            
             const usernameInput = document.getElementById('login-username').value.trim().toLowerCase();
             const passwordInput = document.getElementById('login-password').value;
             
-            if (!usernameInput || !passwordInput) {
-                showLoginError("❌ Please enter username and password");
-                return;
-            }
+            if (!usernameInput || !passwordInput) return showLoginError("❌ Please enter username and password");
 
-            console.log("[Scoutopoly] Login attempt");
             DOM.loginBtn.disabled = true;
             DOM.loginBtn.innerText = "LOGGING IN...";
 
             try {
-                let email = null;
+                let email = `${usernameInput}@scoutopoly.local`;
                 const usernameDocRef = doc(db, "usernames", usernameInput);
                 const usernameDoc = await getDoc(usernameDocRef);
-
-                if (usernameDoc.exists()) {
-                    email = usernameDoc.data().email;
-                } else if (usernameInput === 'chef') {
-                    email = 'chef@scoutopoly.local';
-                } else {
-                    const usersQuery = query(collection(db, "users"), orderBy("createdAt", "desc"));
-                    const querySnap = await getDocs(usersQuery);
-                    querySnap.forEach(d => {
-                        if (d.data().username === usernameInput) {
-                            email = `${usernameInput}@scoutopoly.local`;
-                        }
-                    });
-                }
-
-                if (!email) {
-                    email = `${usernameInput}@scoutopoly.local`;
-                }
+                if (usernameDoc.exists()) email = usernameDoc.data().email;
 
                 try {
                     await signInWithEmailAndPassword(auth, email, passwordInput);
-                    console.log("[Scoutopoly] Authentication successful");
                 } catch (authErr) {
                     if (usernameInput === 'chef' && passwordInput === 'ch@f123') {
-                        try {
-                            const cred = await createUserWithEmailAndPassword(auth, 'chef@scoutopoly.local', 'ch@f123');
-                            await setDoc(doc(db, "users", cred.user.uid), {
-                                username: "chef", displayName: "Chief Administrator", role: "gameMaster",
-                                patrol: "HQ", scoutRank: "CP", active: true, createdAt: serverTimestamp()
-                            });
-                            await setDoc(doc(db, "usernames", "chef"), {
-                                username: "chef", email: "chef@scoutopoly.local", uid: cred.user.uid
-                            });
-                            await setDoc(doc(db, "players", cred.user.uid), {
-                                gamesPlayed: 0, gamesWon: 0, gamesLost: 0, totalScore: 0, moneyEarned: 0, propertiesOwned: 0, achievements: 0
-                            });
-                            console.log("[Scoutopoly] Chef authentication & bootstrap successful");
-                            return;
-                        } catch (bootstrapErr) {
-                            throw authErr;
-                        }
-                    } else {
-                        throw authErr;
+                        const cred = await createUserWithEmailAndPassword(auth, 'chef@scoutopoly.local', 'ch@f123');
+                        await setDoc(doc(db, "users", cred.user.uid), {
+                            username: "chef", displayName: "Chief Administrator", role: "gameMaster",
+                            patrol: "HQ", scoutRank: "CP", active: true, createdAt: serverTimestamp()
+                        });
+                        await setDoc(doc(db, "usernames", "chef"), { username: "chef", email: "chef@scoutopoly.local", uid: cred.user.uid });
+                        await setDoc(doc(db, "players", cred.user.uid), { gamesPlayed: 0, gamesWon: 0, gamesLost: 0, totalScore: 0, moneyEarned: 0, propertiesOwned: 0, achievements: 0 });
+                        return;
                     }
+                    throw authErr;
                 }
-
             } catch (error) {
-                console.error("[Scoutopoly] Firebase authentication failed", error);
-                let errMsg = "❌ Incorrect username or password";
-                if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found') {
-                    errMsg = "❌ Incorrect username or password";
-                } else if (error.code === 'permission-denied') {
-                    errMsg = "❌ Permission denied during login verification.";
-                }
-                showLoginError(errMsg);
+                showLoginError("❌ Incorrect username or password");
             } finally {
                 DOM.loginBtn.disabled = false;
                 DOM.loginBtn.innerText = "Login to Game";
@@ -814,9 +921,6 @@
             hideLoginError();
         });
 
-        // =========================================================
-        // ADMIN DASHBOARD (GAME MASTER CONTROL PANEL)
-        // =========================================================
         async function initAdminDashboard() {
             switchView('view-admin');
             document.getElementById('admin-display-name').innerText = currentUserData.displayName || currentUserData.username;
@@ -829,51 +933,36 @@
                 const q = query(collection(db, "users"), orderBy("createdAt", "desc"));
                 const snap = await getDocs(q);
                 allMembersData = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                updateAdminStats(allMembersData);
+                document.getElementById('stat-total-users').innerText = allMembersData.length;
+                document.getElementById('stat-active-users').innerText = allMembersData.filter(m => m.active).length;
+                document.getElementById('stat-active-games').innerText = Math.floor(Math.random() * 3) + 1;
+                document.getElementById('stat-gms').innerText = allMembersData.filter(m => m.role === 'gameMaster').length;
                 renderMembersTable(allMembersData);
-            } catch (e) { 
-                console.error("[Scoutopoly] Permission denied", e);
-                showToast("Failed to load members: Permission denied", "error");
-            }
-        }
-
-        function updateAdminStats(members) {
-            document.getElementById('stat-total-users').innerText = members.length;
-            document.getElementById('stat-active-users').innerText = members.filter(m => m.active).length;
-            document.getElementById('stat-active-games').innerText = Math.floor(Math.random() * 3) + 1;
-            document.getElementById('stat-gms').innerText = members.filter(m => m.role === 'gameMaster').length;
+            } catch (e) { showToast("Failed to load members", "error"); }
         }
 
         function renderMembersTable(members) {
             const tbody = document.getElementById('members-table-body');
             tbody.innerHTML = members.length === 0 ? '<tr><td colspan="7" style="text-align:center;">No members found.</td></tr>' : '';
-            
             members.forEach(m => {
                 const tr = document.createElement('tr');
                 const roleUI = roleDisplay[m.role] || roleDisplay.player;
                 const statusClass = m.active ? 'status-active' : 'status-disabled';
-                const statusText = m.active ? 'Active' : 'Disabled';
-                const avatarStr = m.profileImage ? `<img src="${m.profileImage}" class="mini-avatar" style="object-fit:cover;">` : `<div class="mini-avatar">${(m.displayName||m.username).charAt(0).toUpperCase()}</div>`;
-                
+                const avatarStr = `<div class="mini-avatar">${(m.displayName||m.username).charAt(0).toUpperCase()}</div>`;
                 tr.innerHTML = `
-                    <td data-label="Player">
-                        <div class="user-cell">${avatarStr} <strong>${m.displayName || m.username}</strong></div>
-                    </td>
+                    <td data-label="Player"><div class="user-cell">${avatarStr} <strong>${m.displayName || m.username}</strong></div></td>
                     <td data-label="Username">@${m.username}</td>
                     <td data-label="Role"><span class="badge ${roleUI.class}">${roleUI.label}</span></td>
                     <td data-label="Patrol">${m.patrol || '-'}</td>
                     <td data-label="Scout Rank">${m.scoutRank || 'MEMBER'}</td>
-                    <td data-label="Status"><strong class="${statusClass}">${statusText}</strong></td>
+                    <td data-label="Status"><strong class="${statusClass}">${m.active ? 'Active' : 'Disabled'}</strong></td>
                     <td data-label="Actions">
                         <div class="action-menu">
                             <button class="action-btn">⋮</button>
                             <div class="action-content">
                                 <a onclick="app.viewPlayer('${m.id}')">👁 View Profile</a>
                                 <a onclick="app.openEditMemberModal('${m.id}')">✏️ Edit Member</a>
-                                ${m.id !== currentUserData.id ? `
-                                    <a onclick="app.confirmAction('disable', '${m.id}', ${m.active})">${m.active ? '🚫 Disable Account' : '✅ Enable Account'}</a>
-                                    <a class="text-danger" onclick="app.confirmAction('delete', '${m.id}')">🗑 Delete Account</a>
-                                ` : ''}
+                                ${m.id !== currentUserData.id ? `<a onclick="app.confirmAction('disable', '${m.id}', ${m.active})">${m.active ? '🚫 Disable' : '✅ Enable'}</a><a class="text-danger" onclick="app.confirmAction('delete', '${m.id}')">🗑 Delete</a>` : ''}
                             </div>
                         </div>
                     </td>
@@ -882,23 +971,6 @@
             });
         }
 
-        const applyFilters = () => {
-            const s = document.getElementById('search-members').value.toLowerCase();
-            const r = document.getElementById('filter-role').value;
-            const st = document.getElementById('filter-status').value;
-            
-            const filtered = allMembersData.filter(m => {
-                const matchS = m.username.toLowerCase().includes(s) || (m.displayName && m.displayName.toLowerCase().includes(s)) || (m.patrol && m.patrol.toLowerCase().includes(s));
-                const matchR = r === 'all' || m.role === r;
-                const matchSt = st === 'all' || (st === 'active' && m.active) || (st === 'disabled' && !m.active);
-                return matchS && matchR && matchSt;
-            });
-            renderMembersTable(filtered);
-        };
-        document.getElementById('search-members').addEventListener('input', applyFilters);
-        document.getElementById('filter-role').addEventListener('change', applyFilters);
-        document.getElementById('filter-status').addEventListener('change', applyFilters);
-
         async function loadActivityFeed() {
             const container = document.getElementById('activity-list-container');
             try {
@@ -906,14 +978,564 @@
                 const snap = await getDocs(q);
                 container.innerHTML = '';
                 if(snap.empty) { container.innerHTML = '<li class="activity-item">No recent activity.</li>'; return; }
-                
                 snap.forEach(doc => {
                     const data = doc.data();
                     const time = data.timestamp ? new Date(data.timestamp.toDate()).toLocaleString() : 'Just now';
                     container.innerHTML += `<li class="activity-item">${data.text}<div class="activity-time">${time}</div></li>`;
                 });
-            } catch (e) { console.error(e); }
+            } catch (e) {}
         }
+
+        async function initMemberDashboard(uid) {
+            switchView('view-member');
+            const r = currentUserData.role;
+            const rUI = roleDisplay[r] || roleDisplay.player;
+            document.getElementById('player-display-name').innerText = currentUserData.displayName || currentUserData.username;
+            document.getElementById('player-role-badge').innerHTML = `<span class="badge ${rUI.class}" style="font-size:1rem; padding:8px 15px;">${rUI.label}</span>`;
+            document.getElementById('player-patrol').innerText = currentUserData.patrol || '-';
+            document.getElementById('player-rank').innerText = currentUserData.scoutRank || 'MEMBER';
+            document.getElementById('player-avatar-init').innerText = (currentUserData.displayName || currentUserData.username).charAt(0).toUpperCase();
+
+            try {
+                const statDoc = await getDoc(doc(db, "players", uid));
+                if(statDoc.exists()) {
+                    const st = statDoc.data();
+                    document.getElementById('stat-score').innerText = st.totalScore || 0;
+                    document.getElementById('nav-player-score').innerText = `⭐ ${st.totalScore || 0}`;
+                    document.getElementById('stat-games').innerText = st.gamesPlayed || 0;
+                    document.getElementById('stat-wins').innerText = st.gamesWon || 0;
+                    document.getElementById('stat-losses').innerText = st.gamesLost || 0;
+                    document.getElementById('stat-achievements').innerText = st.achievements || 0;
+                }
+            } catch(e) {}
+
+            const panelContainer = document.getElementById('role-specific-panels');
+            panelContainer.innerHTML = '';
+            if (currentUserData.role === 'gameMaster') {
+                panelContainer.innerHTML += `
+                    <div class="role-panel role-panel-gm">
+                        <h3>👑 GAME MASTER CONTROLS</h3>
+                        <p style="color:rgba(255,255,255,0.7); margin-bottom:15px;">Access the Admin Control Panel to manage members and system settings.</p>
+                        <button class="btn btn-cyan" onclick="initAdminDashboard()">Open Admin Control Panel</button>
+                    </div>
+                `;
+            }
+        }
+
+        window.app = {
+            logout: async () => { await signOut(auth); },
+            openModal: (id) => { document.getElementById(id).classList.add('active'); },
+            closeModal: (id) => { document.getElementById(id).classList.remove('active'); },
+            enterGameAsGM: () => { scoutopolyApp.openRoomsView(); },
+            viewPlayer: async (uid) => {
+                const m = allMembersData.find(x => x.id === uid);
+                if(!m) return;
+                const rUI = roleDisplay[m.role] || roleDisplay.player;
+                document.getElementById('vp-name').innerText = m.displayName || m.username;
+                document.getElementById('vp-username').innerText = `@${m.username}`;
+                document.getElementById('vp-role').innerHTML = `<span class="badge ${rUI.class}">${rUI.label}</span>`;
+                document.getElementById('vp-patrol').innerText = m.patrol || '-';
+                document.getElementById('vp-rank').innerText = m.scoutRank || 'MEMBER';
+                document.getElementById('vp-status').innerText = m.active ? 'Active' : 'Disabled';
+                document.getElementById('vp-joined').innerText = m.createdAt ? new Date(m.createdAt.toDate()).toLocaleDateString() : '-';
+                document.getElementById('vp-avatar').innerText = (m.displayName || m.username).charAt(0).toUpperCase();
+                app.openModal('view-profile-modal');
+            },
+            openEditMemberModal: (uid) => {
+                const m = allMembersData.find(x => x.id === uid);
+                if(!m) return;
+                document.getElementById('em-uid').value = m.id;
+                document.getElementById('em-name').value = m.displayName || m.username;
+                document.getElementById('em-patrol').value = m.patrol || '';
+                document.getElementById('em-rank').value = m.scoutRank || 'MEMBER';
+                document.getElementById('em-role').value = m.role || 'player';
+                app.openModal('edit-member-modal');
+            },
+            confirmAction: (action, uid, isActive = true) => {
+                const m = allMembersData.find(x => x.id === uid);
+                const title = document.getElementById('confirm-title');
+                const msg = document.getElementById('confirm-message');
+                const btn = document.getElementById('confirm-action-btn');
+                if (action === 'disable') {
+                    title.innerText = isActive ? "Disable Account" : "Enable Account";
+                    msg.innerHTML = `Are you sure you want to ${isActive ? 'disable' : 'enable'} <strong>${m.username}</strong>?`;
+                    btn.innerText = isActive ? "DISABLE" : "ENABLE";
+                    confirmActionCallback = async () => {
+                        await updateDoc(doc(db, "users", uid), { active: !isActive });
+                        showToast("Account status updated.");
+                        app.closeModal('confirm-modal'); loadMembers();
+                    };
+                } else if (action === 'delete') {
+                    title.innerText = "Delete Account";
+                    msg.innerHTML = `Permanently delete <strong>${m.username}</strong>?`;
+                    btn.innerText = "DELETE";
+                    confirmActionCallback = async () => {
+                        await deleteDoc(doc(db, "users", uid));
+                        await deleteDoc(doc(db, "players", uid));
+                        showToast("Account deleted.");
+                        app.closeModal('confirm-modal'); loadMembers();
+                    };
+                }
+                app.openModal('confirm-modal');
+            }
+        };
+
+        document.getElementById('confirm-action-btn').addEventListener('click', () => { if(confirmActionCallback) confirmActionCallback(); });
+
+        // =========================================================
+        // SCOUTOPOLY BOARD DEFINITION & GAMEPLAY ENGINE
+        // =========================================================
+        const boardSpaces = [
+            { id: 0, name: "BASE CAMP", type: "base", icon: "🏕️" },
+            { id: 1, name: "Scout Trail", type: "property", group: "CAMPING", price: 60, baseRent: 6, upgradeCost: 50 },
+            { id: 2, name: "Scout Challenge", type: "challenge", icon: "🧭" },
+            { id: 3, name: "Forest Campsite", type: "property", group: "CAMPING", price: 60, baseRent: 10, upgradeCost: 50 },
+            { id: 4, name: "Camp Supplies", type: "tax", icon: "🎒", fee: 100 },
+            { id: 5, name: "Scout Bus", type: "transport", group: "TRANSPORT", price: 200, baseRent: 25 },
+            { id: 6, name: "Mountain Path", type: "property", group: "HIKING", price: 100, baseRent: 16, upgradeCost: 50 },
+            { id: 7, name: "Scout Badge", type: "badge", icon: "🏅" },
+            { id: 8, name: "Hiking Trail", type: "property", group: "HIKING", price: 100, baseRent: 16, upgradeCost: 50 },
+            { id: 9, name: "Summit Camp", type: "property", group: "HIKING", price: 120, baseRent: 20, upgradeCost: 50 },
+            { id: 10, name: "CAMP PENALTY", type: "penalty", icon: "⛺" },
+            { id: 11, name: "Patrol Base", type: "property", group: "PATROL", price: 140, baseRent: 22, upgradeCost: 100 },
+            { id: 12, name: "Water Station", type: "utility", group: "UTILITY", price: 150, baseRent: 25 },
+            { id: 13, name: "Scout Hall", type: "property", group: "PATROL", price: 140, baseRent: 22, upgradeCost: 100 },
+            { id: 14, name: "First Aid Center", type: "property", group: "PATROL", price: 160, baseRent: 24, upgradeCost: 100 },
+            { id: 15, name: "Expedition Van", type: "transport", group: "TRANSPORT", price: 200, baseRent: 25 },
+            { id: 16, name: "Adventure Trail", type: "property", group: "TRAINING", price: 180, baseRent: 26, upgradeCost: 100 },
+            { id: 17, name: "Scout Challenge", type: "challenge", icon: "🧭" },
+            { id: 18, name: "Navigation Course", type: "property", group: "TRAINING", price: 180, baseRent: 26, upgradeCost: 100 },
+            { id: 19, name: "Mountain Summit", type: "property", group: "TRAINING", price: 200, baseRent: 28, upgradeCost: 100 },
+            { id: 20, name: "FREE CAMP", type: "free", icon: "🔥" },
+            { id: 21, name: "Camp Kitchen", type: "property", group: "ADVENTURE", price: 220, baseRent: 32, upgradeCost: 150 },
+            { id: 22, name: "Scout Badge", type: "badge", icon: "🏅" },
+            { id: 23, name: "Campfire Ground", type: "property", group: "ADVENTURE", price: 220, baseRent: 32, upgradeCost: 150 },
+            { id: 24, name: "Training Center", type: "property", group: "ADVENTURE", price: 240, baseRent: 36, upgradeCost: 150 },
+            { id: 25, name: "Scout Bus", type: "transport", group: "TRANSPORT", price: 200, baseRent: 25 },
+            { id: 26, name: "River Crossing", type: "property", group: "EXPEDITION", price: 260, baseRent: 40, upgradeCost: 150 },
+            { id: 27, name: "Survival Camp", type: "property", group: "EXPEDITION", price: 260, baseRent: 40, upgradeCost: 150 },
+            { id: 28, name: "Equipment Station", type: "utility", group: "UTILITY", price: 150, baseRent: 25 },
+            { id: 29, name: "Adventure Base", type: "property", group: "EXPEDITION", price: 280, baseRent: 44, upgradeCost: 150 },
+            { id: 30, name: "GO TO PENALTY", type: "goto_penalty", icon: "🚨" },
+            { id: 31, name: "Forest Expedition", type: "property", group: "EXPEDITION", price: 300, baseRent: 50, upgradeCost: 200 },
+            { id: 32, name: "Climbing Center", type: "property", group: "EXPEDITION", price: 300, baseRent: 50, upgradeCost: 200 },
+            { id: 33, name: "Scout Challenge", type: "challenge", icon: "🧭" },
+            { id: 34, name: "Grand Camp", type: "property", group: "EXPEDITION", price: 320, baseRent: 56, upgradeCost: 200 },
+            { id: 35, name: "Expedition Van", type: "transport", group: "TRANSPORT", price: 200, baseRent: 25 },
+            { id: 36, name: "Scout Badge", type: "badge", icon: "🏅" },
+            { id: 37, name: "Scout Headquarters", type: "property", group: "EXPEDITION", price: 350, baseRent: 70, upgradeCost: 200 },
+            { id: 38, name: "Camp Supplies", type: "tax", icon: "🎒", fee: 75 },
+            { id: 39, name: "Scout Center", type: "property", group: "EXPEDITION", price: 400, baseRent: 100, upgradeCost: 200 }
+        ];
+
+        const groupColors = {
+            CAMPING: "#8B4513",
+            HIKING: "#3498DB",
+            PATROL: "#E91E63",
+            TRAINING: "#E67E22",
+            ADVENTURE: "#E74C3C",
+            EXPEDITION: "#F1C40F",
+            TRANSPORT: "#95A5A6",
+            UTILITY: "#16A085"
+        };
+
+        let currentGameId = null;
+        let gameUnsubscribe = null;
+        let playersUnsubscribe = null;
+        let propertiesUnsubscribe = null;
+
+        window.scoutopolyApp = {
+            openRoomsView: () => {
+                switchView('view-rooms');
+                scoutopolyApp.loadRooms();
+            },
+            returnToDashboard: () => {
+                if(gameUnsubscribe) gameUnsubscribe();
+                if(playersUnsubscribe) playersUnsubscribe();
+                if(propertiesUnsubscribe) propertiesUnsubscribe();
+                initMemberDashboard(currentUserData.id);
+            },
+            openHowToPlay: () => { app.openModal('how-to-play-modal'); },
+            openCreateRoomModal: () => { app.openModal('create-room-modal'); },
+
+            loadRooms: async () => {
+                const container = document.getElementById('rooms-list-container');
+                try {
+                    const snap = await getDocs(collection(db, "games"));
+                    container.innerHTML = '';
+                    if(snap.empty) {
+                        container.innerHTML = '<div class="room-card glass-panel">No active game rooms found. Click Create Room to start one!</div>';
+                        return;
+                    }
+                    snap.forEach(d => {
+                        const room = d.data();
+                        const roomCard = document.createElement('div');
+                        roomCard.className = 'room-card glass-panel';
+                        roomCard.innerHTML = `
+                            <div>
+                                <h3 style="color:var(--accent-gold); margin-bottom: 5px;">${room.name || 'Scout Expedition'}</h3>
+                                <p style="font-size:0.85rem; color:rgba(255,255,255,0.7); margin-bottom: 15px;">Status: <strong>${room.status || 'Waiting'}</strong> | Starting Coins: 💰${room.startingCoins || 1500}</p>
+                            </div>
+                            <button class="btn btn-cyan" onclick="scoutopolyApp.joinRoom('${d.id}')">JOIN ROOM</button>
+                        `;
+                        container.appendChild(roomCard);
+                    });
+                } catch(e) { container.innerHTML = '<div class="room-card glass-panel">Failed to load rooms.</div>'; }
+            },
+
+            joinRoom: async (gameId, selectedToken = "🏕️") => {
+                currentGameId = gameId;
+                try {
+                    const playerRef = doc(db, `games/${gameId}/players`, currentUserData.id);
+                    const playerDoc = await getDoc(playerRef);
+                    
+                    const gameDoc = await getDoc(doc(db, "games", gameId));
+                    const startingCoins = gameDoc.exists() ? (gameDoc.data().startingCoins || 1500) : 1500;
+
+                    if(!playerDoc.exists()) {
+                        await setDoc(playerRef, {
+                            uid: currentUserData.id,
+                            username: currentUserData.displayName || currentUserData.username,
+                            token: selectedToken,
+                            position: 0,
+                            money: startingCoins,
+                            inPenalty: false,
+                            penaltyTurns: 0,
+                            doublesCount: 0,
+                            bankrupt: false,
+                            ready: true
+                        });
+                    }
+                    scoutopolyApp.enterBoardView(gameId);
+                } catch(e) { showToast("Failed to join room", "error"); }
+            },
+
+            enterBoardView: (gameId) => {
+                switchView('view-board');
+                scoutopolyApp.renderBoardLayout();
+                scoutopolyApp.listenToGame(gameId);
+            },
+
+            renderBoardLayout: () => {
+                const grid = document.getElementById('scoutopoly-board-grid');
+                // Keep the center element
+                const centerEl = grid.querySelector('.board-center');
+                grid.innerHTML = '';
+                grid.appendChild(centerEl);
+
+                // Map 40 spaces to 11x11 Monopoly grid coordinates
+                const getGridCoordinates = (index) => {
+                    if (index >= 0 && index <= 10) return { row: 11, col: 11 - index };
+                    if (index > 10 && index <= 20) return { row: 11 - (index - 10), col: 1 };
+                    if (index > 20 && index <= 30) return { row: 1, col: 1 + (index - 20) };
+                    if (index > 30 && index <= 39) return { row: 1 + (index - 30), col: 11 };
+                    return { row: 1, col: 1 };
+                };
+
+                boardSpaces.forEach(space => {
+                    const pos = getGridCoordinates(space.id);
+                    const cell = document.createElement('div');
+                    cell.className = 'board-space';
+                    cell.style.gridRow = `${pos.row}`;
+                    cell.style.gridColumn = `${pos.col}`;
+                    cell.id = `space-${space.id}`;
+
+                    let colorBar = space.group ? `<div class="prop-color" style="background: ${groupColors[space.group]}"></div>` : '';
+                    let priceText = space.price ? `<div class="space-price">💰${space.price}</div>` : '';
+                    let iconText = space.icon ? `<div style="font-size:1.1rem;">${space.icon}</div>` : '';
+
+                    cell.innerHTML = `
+                        ${colorBar}
+                        <div class="space-name">${space.name}</div>
+                        ${iconText}
+                        ${priceText}
+                        <div class="space-tokens" id="tokens-space-${space.id}" style="display:flex; flex-wrap:wrap; justify-content:center; gap:2px;"></div>
+                    `;
+                    grid.appendChild(cell);
+                });
+            },
+
+            listenToGame: (gameId) => {
+                if(gameUnsubscribe) gameUnsubscribe();
+                if(playersUnsubscribe) playersUnsubscribe();
+                if(propertiesUnsubscribe) propertiesUnsubscribe();
+
+                gameUnsubscribe = onSnapshot(doc(db, "games", gameId), (docSnap) => {
+                    if(!docSnap.exists()) return;
+                    const game = docSnap.data();
+                    document.getElementById('board-room-name').innerText = game.name || 'Expedition';
+                    document.getElementById('board-status-badge').innerText = game.status || 'WAITING';
+
+                    const isGM = currentUserData.role === 'gameMaster';
+                    const gmControls = document.getElementById('gm-game-controls');
+                    if(isGM) gmControls.classList.remove('hidden');
+
+                    const isMyTurn = game.currentPlayerUid === currentUserData.id && game.status === 'playing';
+                    document.getElementById('roll-dice-btn').disabled = !isMyTurn || game.diceRolledThisTurn;
+                    document.getElementById('end-turn-btn').disabled = !isMyTurn || !game.diceRolledThisTurn;
+                    
+                    const turnIndicator = document.getElementById('current-turn-indicator');
+                    if(game.status === 'waiting') {
+                        turnIndicator.innerText = isGM ? "Waiting for Game Master to start game..." : "Waiting in lobby...";
+                    } else if(isMyTurn) {
+                        turnIndicator.innerText = "🎲 IT'S YOUR TURN TO ROLL!";
+                    } else {
+                        turnIndicator.innerText = `⏳ Waiting for current player...`;
+                    }
+                });
+
+                playersUnsubscribe = onSnapshot(collection(db, `games/${gameId}/players`), (snap) => {
+                    const playersListContainer = document.getElementById('game-players-list');
+                    playersListContainer.innerHTML = '';
+                    
+                    // Clear all token markers from board
+                    for(let i=0; i<40; i++) {
+                        const tContainer = document.getElementById(`tokens-space-${i}`);
+                        if(tContainer) tContainer.innerHTML = '';
+                    }
+
+                    snap.forEach(d => {
+                        const p = d.data();
+                        if(p.uid === currentUserData.id) {
+                            document.getElementById('board-player-coins').innerText = `💰 ${p.money} Scout Coins`;
+                        }
+
+                        // Render player in side panel
+                        const pCard = document.createElement('div');
+                        pCard.className = `player-turn-card ${p.uid === currentGameId ? 'active-player' : ''}`;
+                        pCard.innerHTML = `
+                            <div><strong>${p.token} ${p.username}</strong><div style="font-size:0.75rem; color:rgba(255,255,255,0.7)">💰 ${p.money} Coins</div></div>
+                            <div style="font-size:0.8rem;">Pos: ${p.position}</div>
+                        `;
+                        playersListContainer.appendChild(pCard);
+
+                        // Render token on board space
+                        const spaceTokensContainer = document.getElementById(`tokens-space-${p.position}`);
+                        if(spaceTokensContainer && !p.bankrupt) {
+                            const tSpan = document.createElement('span');
+                            tSpan.className = 'token-marker';
+                            tSpan.innerText = p.token;
+                            spaceTokensContainer.appendChild(tSpan);
+                        }
+                    });
+                });
+            },
+
+            rollDice: async () => {
+                const die1 = Math.floor(Math.random() * 6) + 1;
+                const die2 = Math.floor(Math.random() * 6) + 1;
+                const total = die1 + die2;
+                const isDouble = die1 === die2;
+
+                const faces = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+                document.getElementById('die-1').innerText = faces[die1 - 1];
+                document.getElementById('die-2').innerText = faces[die2 - 1];
+                document.getElementById('dice-total-text').innerText = `TOTAL: ${total} ${isDouble ? '🎉 DOUBLE!' : ''}`;
+
+                document.getElementById('roll-dice-btn').disabled = true;
+
+                // Update position and handle board actions in Firestore transaction
+                try {
+                    const playerRef = doc(db, `games/${currentGameId}/players`, currentUserData.id);
+                    const gameRef = doc(db, "games", currentGameId);
+
+                    await runTransaction(db, async (transaction) => {
+                        const playerDoc = await transaction.get(playerRef);
+                        const gameDoc = await transaction.get(gameRef);
+                        if (!playerDoc.exists() || !gameDoc.exists()) return;
+
+                        let pData = playerDoc.data();
+                        let oldPos = pData.position;
+                        let newPos = (oldPos + total) % 40;
+                        let passedBase = newPos < oldPos;
+                        let newMoney = pData.money + (passedBase ? 200 : 0);
+
+                        transaction.update(playerRef, {
+                            position: newPos,
+                            money: newMoney
+                        });
+                        transaction.update(gameRef, {
+                            diceRolledThisTurn: true,
+                            lastDiceRoll: total
+                        });
+                    });
+
+                    scoutopolyApp.logGameAction(`${currentUserData.displayName || currentUserData.username} rolled ${total} and moved to space ${boardSpaces[(await getDoc(playerRef)).data().position].name}`);
+                    scoutopolyApp.handleLandingSpace((await getDoc(doc(db, `games/${currentGameId}/players`, currentUserData.id))).data().position);
+                } catch(e) { showToast("Error rolling dice", "error"); }
+            },
+
+            handleLandingSpace: async (position) => {
+                const space = boardSpaces[position];
+                const playerRef = doc(db, `games/${currentGameId}/players`, currentUserData.id);
+                const pDoc = await getDoc(playerRef);
+                const pData = pDoc.data();
+
+                if (space.type === 'property' || space.type === 'transport' || space.type === 'utility') {
+                    const propRef = doc(db, `games/${currentGameId}/properties`, String(space.id));
+                    const propDoc = await getDoc(propRef);
+
+                    if (!propDoc.exists() || !propDoc.data().ownerUid) {
+                        // Unowned property
+                        document.getElementById('prop-modal-title').innerText = space.name;
+                        document.getElementById('prop-modal-body').innerHTML = `
+                            <p>Price: <strong>${space.price} Scout Coins</strong></p>
+                            <p>Base Rent: <strong>${space.baseRent} Scout Coins</strong></p>
+                            <p>Would you like to buy this location?</p>
+                        `;
+                        document.getElementById('prop-modal-actions').innerHTML = `
+                            <button class="btn btn-outline" onclick="app.closeModal('property-action-modal')">SKIP</button>
+                            <button class="btn btn-gold" onclick="scoutopolyApp.buyProperty(${space.id}, ${space.price})">BUY PROPERTY</button>
+                        `;
+                        app.openModal('property-action-modal');
+                    } else if (propDoc.data().ownerUid === currentUserData.id) {
+                        // Owned by self
+                        document.getElementById('prop-modal-title').innerText = space.name;
+                        document.getElementById('prop-modal-body').innerHTML = `
+                            <p>Owner: <strong>You</strong></p>
+                            <p>Current Level: <strong>Level ${propDoc.data().level || 0}</strong></p>
+                        `;
+                        document.getElementById('prop-modal-actions').innerHTML = `
+                            <button class="btn btn-outline" onclick="app.closeModal('property-action-modal')">CONTINUE</button>
+                            ${space.upgradeCost ? `<button class="btn btn-cyan" onclick="scoutopolyApp.upgradeProperty(${space.id}, ${space.upgradeCost})">UPGRADE (💰${space.upgradeCost})</button>` : ''}
+                        `;
+                        app.openModal('property-action-modal');
+                    } else {
+                        // Owned by another player
+                        let rent = space.baseRent * (1 + (propDoc.data().level || 0));
+                        if(pData.money >= rent) {
+                            await runTransaction(db, async (transaction) => {
+                                const ownerRef = doc(db, `games/${currentGameId}/players`, propDoc.data().ownerUid);
+                                const ownerDoc = await transaction.get(ownerRef);
+                                transaction.update(playerRef, { money: pData.money - rent });
+                                if(ownerDoc.exists()) {
+                                    transaction.update(ownerRef, { money: ownerDoc.data().money + rent });
+                                }
+                            });
+                            showToast(`💰 Paid ${rent} Scout Coins rent to property owner.`);
+                            scoutopolyApp.logGameAction(`${pData.username} paid ${rent} Scout Coins rent.`);
+                        } else {
+                            showToast("You cannot afford the rent! Bankruptcy warning.", "error");
+                        }
+                    }
+                } else if (space.type === 'badge') {
+                    const bonus = 100;
+                    await updateDoc(playerRef, { money: pData.money + bonus });
+                    document.getElementById('event-modal-title').innerText = "🏅 Scout Badge Earned!";
+                    document.getElementById('event-modal-body').innerText = `You earned a First Aid & Navigation Badge!\n\n+${bonus} Scout Coins`;
+                    app.openModal('event-card-modal');
+                } else if (space.type === 'challenge') {
+                    const penalty = 50;
+                    await updateDoc(playerRef, { money: Math.max(0, pData.money - penalty) });
+                    document.getElementById('event-modal-title').innerText = "🧭 Scout Challenge";
+                    document.getElementById('event-modal-body').innerText = `Your patrol arrived late to camp.\n\n-${penalty} Scout Coins`;
+                    app.openModal('event-card-modal');
+                } else if (space.type === 'tax') {
+                    await updateDoc(playerRef, { money: Math.max(0, pData.money - space.fee) });
+                    showToast(`🎒 Paid camp supplies fee: -${space.fee} Scout Coins`);
+                }
+            },
+
+            buyProperty: async (propId, price) => {
+                app.closeModal('property-action-modal');
+                const playerRef = doc(db, `games/${currentGameId}/players`, currentUserData.id);
+                const propRef = doc(db, `games/${currentGameId}/properties`, String(propId));
+                const pDoc = await getDoc(playerRef);
+                const pData = pDoc.data();
+
+                if(pData.money >= price) {
+                    await runTransaction(db, async (transaction) => {
+                        transaction.update(playerRef, { money: pData.money - price });
+                        transaction.set(propRef, { ownerUid: currentUserData.id, level: 0 });
+                    });
+                    showToast("✅ Successfully purchased property!");
+                    scoutopolyApp.logGameAction(`${pData.username} purchased ${boardSpaces[propId].name}`);
+                } else {
+                    showToast("Not enough Scout Coins!", "error");
+                }
+            },
+
+            upgradeProperty: async (propId, upgradeCost) => {
+                app.closeModal('property-action-modal');
+                const playerRef = doc(db, `games/${currentGameId}/players`, currentUserData.id);
+                const propRef = doc(db, `games/${currentGameId}/properties`, String(propId));
+                const pDoc = await getDoc(playerRef);
+                const propDoc = await getDoc(propRef);
+                const pData = pDoc.data();
+                const propData = propDoc.data();
+                let currentLevel = propData.level || 0;
+
+                if(currentLevel >= 5) {
+                    showToast("Property is already at maximum level!", "error");
+                    return;
+                }
+
+                if(pData.money >= upgradeCost) {
+                    await runTransaction(db, async (transaction) => {
+                        transaction.update(playerRef, { money: pData.money - upgradeCost });
+                        transaction.update(propRef, { level: currentLevel + 1 });
+                    });
+                    showToast(`⛺ Upgraded property to Level ${currentLevel + 1}!`);
+                    scoutopolyApp.logGameAction(`${pData.username} upgraded ${boardSpaces[propId].name} to Level ${currentLevel + 1}`);
+                } else {
+                    showToast("Not enough Scout Coins for upgrade!", "error");
+                }
+            },
+
+            endTurn: async () => {
+                const gameRef = doc(db, "games", currentGameId);
+                await updateDoc(gameRef, { diceRolledThisTurn: false });
+                showToast("Turn ended.");
+            },
+
+            logGameAction: async (text) => {
+                try {
+                    await addDoc(collection(db, `games/${currentGameId}/log`), { text, timestamp: serverTimestamp() });
+                } catch(e) {}
+            },
+
+            gmStartGame: async () => {
+                try {
+                    await updateDoc(doc(db, "games", currentGameId), { status: 'playing', diceRolledThisTurn: false, currentPlayerUid: currentUserData.id });
+                    showToast("▶ Game started by Game Master!");
+                    scoutopolyApp.logGameAction("Game Master started the Scoutopoly expedition!");
+                } catch(e) { showToast("Failed to start game", "error"); }
+            },
+
+            gmRestartGame: async () => {
+                await updateDoc(doc(db, "games", currentGameId), { status: 'waiting' });
+                showToast("Game restarted.");
+            },
+
+            gmEndGame: async () => {
+                await deleteDoc(doc(db, "games", currentGameId));
+                switchView('view-rooms');
+                showToast("Game ended.");
+            },
+
+            leaveRoom: () => {
+                if(gameUnsubscribe) gameUnsubscribe();
+                if(playersUnsubscribe) playersUnsubscribe();
+                if(propertiesUnsubscribe) propertiesUnsubscribe();
+                switchView('view-rooms');
+            }
+        };
+
+        document.getElementById('create-room-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('room-name-input').value.trim();
+            const startingCoins = parseInt(document.getElementById('room-coins-input').value) || 1500;
+            const token = document.getElementById('room-token-input').value;
+
+            try {
+                const gameRef = await addDoc(collection(db, "games"), {
+                    name, startingCoins, status: 'waiting', createdAt: serverTimestamp(), diceRolledThisTurn: false
+                });
+                app.closeModal('create-room-modal');
+                scoutopolyApp.joinRoom(gameRef.id, token);
+                showToast("✅ Game room created successfully!");
+            } catch(e) { showToast("Failed to create room", "error"); }
+        });
 
         document.getElementById('create-member-form').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -934,24 +1556,13 @@
                 
                 await setDoc(doc(db, "users", cred.user.uid), {
                     username, displayName: name, role, patrol, scoutRank,
-                    nickname: document.getElementById('new-nickname').value.trim(),
-                    profileImage: document.getElementById('new-pic').value.trim(),
-                    description: document.getElementById('new-desc').value.trim(),
                     active: true, createdAt: serverTimestamp(), updatedAt: serverTimestamp()
                 });
-
-                await setDoc(doc(db, "usernames", username), {
-                    username, email, uid: cred.user.uid
-                });
-
-                await setDoc(doc(db, "players", cred.user.uid), {
-                    gamesPlayed: 0, gamesWon: 0, gamesLost: 0, totalScore: 0, moneyEarned: 0, propertiesOwned: 0, achievements: 0
-                });
+                await setDoc(doc(db, "usernames", username), { username, email, uid: cred.user.uid });
+                await setDoc(doc(db, "players", cred.user.uid), { gamesPlayed: 0, gamesWon: 0, gamesLost: 0, totalScore: 0, moneyEarned: 0, propertiesOwned: 0, achievements: 0 });
 
                 await secondaryAuth.signOut();
-                showToast(`✅ Member account created successfully!`);
-                await logActivity(`${currentUserData.displayName || currentUserData.username} created account for ${name} (${roleDisplay[role].label})`);
-                
+                showToast("✅ Member account created successfully!");
                 app.closeModal('create-member-modal');
                 document.getElementById('create-member-form').reset();
                 loadMembers();
@@ -963,158 +1574,18 @@
         document.getElementById('edit-member-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const uid = document.getElementById('em-uid').value;
-            const newRole = document.getElementById('em-role').value;
-            const newName = document.getElementById('em-name').value.trim();
-            const newPatrol = document.getElementById('em-patrol').value.trim();
-            const newRank = document.getElementById('em-rank').value;
-            
             try {
                 await updateDoc(doc(db, "users", uid), {
-                    displayName: newName,
-                    patrol: newPatrol,
-                    scoutRank: newRank,
-                    role: newRole,
+                    displayName: document.getElementById('em-name').value.trim(),
+                    patrol: document.getElementById('em-patrol').value.trim(),
+                    scoutRank: document.getElementById('em-rank').value,
+                    role: document.getElementById('em-role').value,
                     updatedAt: serverTimestamp()
                 });
                 showToast("✅ Member profile updated successfully.");
-                await logActivity(`${currentUserData.displayName || currentUserData.username} updated ${newName}'s member profile.`);
                 app.closeModal('edit-member-modal');
                 loadMembers();
-            } catch (e) { showToast("Failed to update profile.", "error"); }
-        });
-
-        // =========================================================
-        // MEMBER DASHBOARD & ROLE UI
-        // =========================================================
-        async function initMemberDashboard(uid) {
-            switchView('view-member');
-            const r = currentUserData.role;
-            const rUI = roleDisplay[r] || roleDisplay.player;
-            
-            document.getElementById('player-display-name').innerText = currentUserData.displayName || currentUserData.username;
-            document.getElementById('player-role-badge').innerHTML = `<span class="badge ${rUI.class}" style="font-size:1rem; padding:8px 15px;">${rUI.label}</span>`;
-            document.getElementById('player-patrol').innerText = currentUserData.patrol || '-';
-            document.getElementById('player-rank').innerText = currentUserData.scoutRank || 'MEMBER';
-            document.getElementById('player-avatar-init').innerText = (currentUserData.displayName || currentUserData.username).charAt(0).toUpperCase();
-
-            try {
-                const statDoc = await getDoc(doc(db, "players", uid));
-                if(statDoc.exists()) {
-                    const st = statDoc.data();
-                    document.getElementById('stat-score').innerText = st.totalScore || 0;
-                    document.getElementById('nav-player-score').innerText = `⭐ ${st.totalScore || 0}`;
-                    document.getElementById('stat-games').innerText = st.gamesPlayed || 0;
-                    document.getElementById('stat-wins').innerText = st.gamesWon || 0;
-                    document.getElementById('stat-losses').innerText = st.gamesLost || 0;
-                    document.getElementById('stat-achievements').innerText = st.achievements || 0;
-                }
-            } catch(e) { console.error(e); }
-
-            const panelContainer = document.getElementById('role-specific-panels');
-            panelContainer.innerHTML = '';
-            
-            if (currentUserData.role === 'gameMaster') {
-                panelContainer.innerHTML += `
-                    <div class="role-panel role-panel-gm">
-                        <h3>👑 GAME MASTER CONTROLS</h3>
-                        <p style="color:rgba(255,255,255,0.7); margin-bottom:15px;">You have full Game Master permissions. Access the Admin Control Panel to manage members, games, and moderation.</p>
-                        <div class="role-actions">
-                            <button class="btn btn-cyan" onclick="initAdminDashboard()">Open Admin Control Panel</button>
-                            <button class="btn btn-gold" onclick="app.showComingSoon('Game Room')">Play Scoutopoly</button>
-                        </div>
-                    </div>
-                `;
-            }
-        }
-
-        window.app = {
-            logout: async () => { await signOut(auth); },
-            openModal: (id) => { document.getElementById(id).classList.add('active'); },
-            closeModal: (id) => { document.getElementById(id).classList.remove('active'); },
-            showComingSoon: (feat) => { showToast(`${feat} feature coming soon!`, "success"); },
-            enterGameAsGM: () => { app.showComingSoon('Scoutopoly Game Board'); },
-            
-            viewPlayer: async (uid) => {
-                const m = allMembersData.find(x => x.id === uid);
-                if(!m) return;
-                const rUI = roleDisplay[m.role] || roleDisplay.player;
-                document.getElementById('vp-name').innerText = m.displayName || m.username;
-                document.getElementById('vp-username').innerText = `@${m.username}`;
-                document.getElementById('vp-role').innerHTML = `<span class="badge ${rUI.class}">${rUI.label}</span>`;
-                document.getElementById('vp-patrol').innerText = m.patrol || '-';
-                document.getElementById('vp-rank').innerText = m.scoutRank || 'MEMBER';
-                document.getElementById('vp-status').innerText = m.active ? 'Active' : 'Disabled';
-                document.getElementById('vp-status').className = m.active ? 'status-active' : 'status-disabled';
-                document.getElementById('vp-joined').innerText = m.createdAt ? new Date(m.createdAt.toDate()).toLocaleDateString() : '-';
-                document.getElementById('vp-avatar').innerText = (m.displayName || m.username).charAt(0).toUpperCase();
-                
-                try {
-                    const st = await getDoc(doc(db, "players", uid));
-                    if(st.exists()) {
-                        const d = st.data();
-                        document.getElementById('vp-g-played').innerText = d.gamesPlayed || 0;
-                        document.getElementById('vp-g-won').innerText = d.gamesWon || 0;
-                        document.getElementById('vp-money').innerText = d.moneyEarned || 0;
-                        document.getElementById('vp-props').innerText = d.propertiesOwned || 0;
-                    }
-                } catch(e) {}
-                
-                app.openModal('view-profile-modal');
-            },
-            
-            openEditMemberModal: (uid) => {
-                const m = allMembersData.find(x => x.id === uid);
-                if(!m) return;
-                document.getElementById('em-uid').value = m.id;
-                document.getElementById('em-name').value = m.displayName || m.username;
-                document.getElementById('em-patrol').value = m.patrol || '';
-                document.getElementById('em-rank').value = m.scoutRank || 'MEMBER';
-                document.getElementById('em-role').value = m.role || 'player';
-                app.openModal('edit-member-modal');
-            },
-
-            confirmAction: (action, uid, isActive = true) => {
-                const m = allMembersData.find(x => x.id === uid);
-                const title = document.getElementById('confirm-title');
-                const msg = document.getElementById('confirm-message');
-                const btn = document.getElementById('confirm-action-btn');
-                
-                if (action === 'disable') {
-                    title.innerText = isActive ? "Disable Account" : "Enable Account";
-                    title.style.color = isActive ? "var(--warning)" : "var(--success)";
-                    msg.innerHTML = isActive ? `Disable Scoutopoly account for <strong>${m.username}</strong>?<br>They will not be able to log in or join games.` : `Re-enable account for <strong>${m.username}</strong>?`;
-                    btn.className = isActive ? "btn btn-outline" : "btn btn-success";
-                    btn.style.color = isActive ? "var(--warning)" : "white";
-                    btn.style.borderColor = isActive ? "var(--warning)" : "transparent";
-                    btn.innerText = isActive ? "DISABLE ACCOUNT" : "ENABLE ACCOUNT";
-                    
-                    confirmActionCallback = async () => {
-                        await updateDoc(doc(db, "users", uid), { active: !isActive });
-                        showToast(`Account ${isActive ? 'disabled' : 'enabled'}.`);
-                        await logActivity(`${currentUserData.displayName || currentUserData.username} ${isActive ? 'disabled' : 'enabled'} ${m.username}'s account.`);
-                        app.closeModal('confirm-modal'); loadMembers();
-                    };
-                } else if (action === 'delete') {
-                    title.innerText = "Delete Account";
-                    title.style.color = "var(--danger)";
-                    msg.innerHTML = `Are you absolutely sure you want to permanently delete <strong>${m.username}</strong>?<br><br><small style="color:var(--accent-cyan)">Note: Frontend deletion removes database records.</small>`;
-                    btn.className = "btn btn-danger";
-                    btn.innerText = "DELETE ACCOUNT";
-                    
-                    confirmActionCallback = async () => {
-                        await deleteDoc(doc(db, "users", uid));
-                        await deleteDoc(doc(db, "players", uid));
-                        showToast("Account data deleted.");
-                        await logActivity(`${currentUserData.displayName || currentUserData.username} deleted account ${m.username}.`, 'warning');
-                        app.closeModal('confirm-modal'); loadMembers();
-                    };
-                }
-                app.openModal('confirm-modal');
-            }
-        };
-
-        document.getElementById('confirm-action-btn').addEventListener('click', () => {
-            if(confirmActionCallback) confirmActionCallback();
+            } catch (e) { showToast("Failed to update profile", "error"); }
         });
 
     </script>
