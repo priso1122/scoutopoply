@@ -1,12 +1,989 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <meta http-equiv="refresh" content="0;url=./scoutopoly.html" />
-    <title>Scoutopoly</title>
-  </head>
-  <body>
-    <p>Opening Scoutopoly… <a href="./scoutopoly.html">Continue</a></p>
-  </body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCOUTOPOLY — Build • Serve • Lead</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0b130e;
+            --bg-card: rgba(18, 30, 22, 0.85);
+            --forest-green: #1b3823;
+            --forest-accent: #2e5a38;
+            --gold: #f3ba2f;
+            --gold-glow: rgba(243, 186, 47, 0.3);
+            --orange-fire: #e65c00;
+            --text-light: #f0f4f1;
+            --text-muted: #9eb1a2;
+            --danger: #d9534f;
+            --success: #4caf50;
+            --border: rgba(243, 186, 47, 0.25);
+            --radius: 12px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: var(--bg-dark); color: var(--text-light); overflow-x: hidden; min-height: 100vh; background-image: radial-gradient(circle at 50% 20%, #15291b 0%, #0b130e 80%); }
+
+        /* Typography & Utilities */
+        h1, h2, h3, .scout-title { font-family: 'Cinzel', serif; letter-spacing: 1px; text-transform: uppercase; }
+        .text-gold { color: var(--gold); }
+        .text-muted { color: var(--text-muted); }
+        .flex-center { display: flex; align-items: center; justify-content: center; }
+        .btn {
+            background: linear-gradient(135deg, #f3ba2f, #d49b10);
+            color: #0b130e; border: none; padding: 10px 20px; font-weight: 700;
+            border-radius: 8px; cursor: pointer; transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(243, 186, 47, 0.2); text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(243, 186, 47, 0.4); }
+        .btn-secondary { background: rgba(255,255,255,0.1); color: var(--text-light); border: 1px solid var(--border); }
+        .btn-secondary:hover { background: rgba(255,255,255,0.2); }
+        .btn-danger { background: linear-gradient(135deg, #d9534f, #b52b27); color: white; }
+        .btn-sm { padding: 6px 12px; font-size: 0.85rem; }
+
+        /* Glass Panel */
+        .glass-panel {
+            background: var(--bg-card); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border); border-radius: var(--radius); padding: 20px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+        }
+
+        /* Views management */
+        .view-screen { display: none; width: 100%; min-height: 100vh; padding: 20px; }
+        .view-screen.active { display: flex; flex-direction: column; }
+
+        /* LOBBY VIEW */
+        #lobby-view { justify-content: center; align-items: center; background: url('https://images.unsplash.com/photo-1510312305653-8ed496efae75?auto=format&fit=crop&w=1920&q=80') center/cover no-repeat; position: relative; }
+        #lobby-view::before { content: ''; position: absolute; inset: 0; background: rgba(11, 19, 14, 0.85); }
+        .lobby-box { position: relative; z-index: 2; width: 100%; max-width: 500px; text-align: center; }
+        .lobby-title { font-size: 2.8rem; color: var(--gold); text-shadow: 0 0 20px var(--gold-glow); margin-bottom: 5px; }
+        .lobby-subtitle { font-size: 0.9rem; letter-spacing: 3px; color: var(--text-muted); margin-bottom: 25px; }
+        .form-group { margin-bottom: 15px; text-align: left; }
+        .form-group label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px; }
+        .form-control { width: 100%; padding: 12px; background: rgba(0,0,0,0.4); border: 1px solid var(--border); border-radius: 8px; color: white; font-size: 1rem; }
+        .form-control:focus { outline: none; border-color: var(--gold); }
+
+        /* MAIN HUD & GAMEPLAY */
+        #game-view { padding: 15px; gap: 15px; max-width: 1600px; margin: 0 auto; width: 100%; }
+        .hud-header { display: flex; justify-content: space-between; align-items: center; width: 100%; flex-wrap: wrap; gap: 10px; }
+        .hud-status { display: flex; gap: 15px; align-items: center; }
+        .status-badge { padding: 8px 15px; background: rgba(0,0,0,0.4); border: 1px solid var(--border); border-radius: 20px; font-size: 0.9rem; }
+
+        .game-layout { display: grid; grid-template-columns: 280px 1fr 320px; gap: 15px; width: 100%; height: calc(100vh - 100px); }
+        @media (max-width: 1200px) { .game-layout { grid-template-columns: 1fr; height: auto; } }
+
+        /* BOARD STYLING */
+        .board-container { position: relative; width: 100%; aspect-ratio: 1/1; max-height: 780px; margin: 0 auto; display: grid; grid-template-columns: repeat(9, 1fr); grid-template-rows: repeat(9, 1fr); gap: 4px; padding: 10px; background: #070d0a; border: 2px solid var(--gold); border-radius: var(--radius); }
+        .board-center { grid-column: 2 / 9; grid-row: 2 / 9; background: radial-gradient(circle, #1a3321 0%, #0d1a11 100%); border-radius: 8px; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; text-align: center; position: relative; border: 1px solid rgba(243, 186, 47, 0.15); overflow: hidden; }
+        .board-center::before { content: '🏕️'; font-size: 5rem; opacity: 0.15; position: absolute; }
+        
+        .board-space { background: rgba(22, 38, 27, 0.9); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 4px; display: flex; flex-direction: column; justify-content: space-between; align-items: center; font-size: 0.65rem; text-align: center; position: relative; cursor: pointer; transition: all 0.2s ease; overflow: hidden; }
+        .board-space:hover { border-color: var(--gold); z-index: 10; transform: scale(1.05); }
+        .space-header { width: 100%; padding: 2px 0; font-weight: 700; text-transform: uppercase; font-size: 0.6rem; border-radius: 3px 3px 0 0; }
+        .space-name { font-weight: 700; margin: 2px 0; line-height: 1.1; color: #fff; }
+        .space-price { color: var(--gold); font-size: 0.6rem; }
+        .space-tokens { display: flex; flex-wrap: wrap; gap: 2px; justify-content: center; position: absolute; bottom: 2px; width: 100%; z-index: 5; }
+        
+        .token { width: 16px; height: 16px; border-radius: 50%; border: 2px solid #fff; font-size: 0.55rem; display: flex; align-items: center; justify-content: center; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.8); }
+
+        /* SIDE PANELS */
+        .panel-scroll { overflow-y: auto; max-height: 100%; display: flex; flex-direction: column; gap: 15px; }
+        .log-feed { font-size: 0.8rem; display: flex; flex-direction: column; gap: 8px; max-height: 250px; overflow-y: auto; }
+        .log-item { padding: 6px 10px; background: rgba(0,0,0,0.3); border-left: 3px solid var(--gold); border-radius: 4px; }
+
+        /* DICE ANIMATION */
+        .dice-box { display: flex; gap: 15px; justify-content: center; margin: 15px 0; }
+        .die { width: 50px; height: 50px; background: white; color: #000; border-radius: 8px; font-size: 1.8rem; font-weight: bold; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        .die.rolling { animation: spin 0.4s infinite linear; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* MODALS */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
+        .modal-overlay.active { display: flex; }
+        .modal-card { width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+
+        /* CERTIFICATE / AWARDS */
+        .certificate { background: #fffdf5; color: #2b1d0c; border: 12px double #8b6b23; padding: 30px; text-align: center; border-radius: 4px; margin-bottom: 20px; position: relative; }
+        .certificate h2 { font-size: 2rem; color: #5a4310; margin-bottom: 10px; }
+
+        /* MOBILE FIXES */
+        @media (max-width: 768px) {
+            .board-container { font-size: 0.5rem; }
+            .space-name { font-size: 0.5rem; }
+            .die { width: 40px; height: 40px; font-size: 1.3rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- AUDIO ELEMENTS (SYNTHESIZED WEB AUDIO FALLBACK) -->
+    
+    <!-- LOBBY SCREEN -->
+    <div id="lobby-view" class="view-screen active">
+        <div class="lobby-box glass-panel">
+            <h1 class="lobby-title">SCOUTOPOLY</h1>
+            <p class="lobby-subtitle">BUILD • SERVE • LEAD</p>
+            
+            <div id="auth-section">
+                <div class="form-group">
+                    <label>Player / Game Master Name</label>
+                    <input type="text" id="player-name-input" class="form-control" placeholder="e.g. Leader Alex">
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px;">
+                    <button class="btn" onclick="app.createGame()">Create Game (GM)</button>
+                    <button class="btn btn-secondary" onclick="app.showJoinForm()">Join Patrol</button>
+                </div>
+
+                <div id="join-form" style="display: none; margin-top: 20px; border-top: 1px solid var(--border); padding-top: 15px;">
+                    <div class="form-group">
+                        <label>Game Room Code</label>
+                        <input type="text" id="join-code-input" class="form-control" placeholder="6-digit code" style="text-transform: uppercase;">
+                    </div>
+                    <div class="form-group">
+                        <label>Select Patrol</label>
+                        <select id="patrol-select" class="form-control">
+                            <option value="Wolves">🐺 Wolves</option>
+                            <option value="Eagles">🦅 Eagles</option>
+                            <option value="Lions">🦁 Lions</option>
+                            <option value="Foxes">🦊 Foxes</option>
+                            <option value="Dragons">🐉 Dragons</option>
+                            <option value="Owls">🦉 Owls</option>
+                            <option value="Bears">🐻 Bears</option>
+                            <option value="Stags">🦌 Stags</option>
+                        </select>
+                    </div>
+                    <button class="btn" style="width: 100%; margin-top: 10px;" onclick="app.joinGame()">Join Room</button>
+                </div>
+            </div>
+
+            <div id="lobby-waiting" style="display: none; margin-top: 20px;">
+                <h3 class="text-gold">ROOM CODE: <span id="room-code-display">------</span></h3>
+                <p class="text-muted" style="margin: 10px 0;">Connected Patrols:</p>
+                <div id="connected-patrols-list" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px;"></div>
+                <button id="start-game-btn" class="btn" style="display: none; width: 100%;" onclick="app.startGame()">START GAME</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN GAME HUD -->
+    <div id="game-view" class="view-screen">
+        <div class="hud-header glass-panel">
+            <div>
+                <h2 style="color: var(--gold); font-size: 1.4rem;">SCOUTOPOLY</h2>
+                <span class="text-muted" style="font-size: 0.8rem;">ROOM: <strong id="hud-room-code"></strong> | ROLE: <strong id="hud-role"></strong></span>
+            </div>
+            <div class="hud-status">
+                <div class="status-badge">Turn: <strong id="turn-patrol-name" class="text-gold">---</strong></div>
+                <div class="status-badge">Phase: <strong id="turn-phase-name">START</strong></div>
+                <button class="btn btn-secondary btn-sm" onclick="app.toggleModal('rules-modal')">📖 Rules</button>
+                <button class="btn btn-secondary btn-sm" onclick="app.toggleModal('patrol-guide-modal')">📜 Patrol Guide</button>
+                <button id="gm-panel-btn" class="btn btn-danger btn-sm" style="display:none;" onclick="app.toggleModal('gm-modal')">⚙️ GM Panel</button>
+            </div>
+        </div>
+
+        <div class="game-layout">
+            <!-- LEFT PANEL: PATROL DASHBOARD -->
+            <div class="glass-panel panel-scroll">
+                <h3 class="scout-title text-gold" style="font-size: 1rem;">Patrol Dashboard</h3>
+                <div id="my-patrol-card" style="padding: 10px; background: rgba(0,0,0,0.3); border-radius: 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h4 id="dash-patrol-name">---</h4>
+                        <span id="dash-patrol-token" class="token" style="width:24px; height:24px; font-size:0.8rem;"></span>
+                    </div>
+                    <hr style="border-color: var(--border); margin: 8px 0;">
+                    <p style="font-size: 0.9rem;">Trail Points: <strong id="dash-tp" class="text-gold">500 TP</strong></p>
+                    <p style="font-size: 0.9rem;">Honor Score: <strong id="dash-honor" style="color:#64b5f6;">0</strong></p>
+                    <p style="font-size: 0.8rem; margin-top: 5px;">Owned Bases: <span id="dash-bases-count">0</span></p>
+                </div>
+
+                <!-- CONTROLS -->
+                <div id="patrol-actions-box" style="display: flex; flex-direction: column; gap: 10px;">
+                    <div class="dice-box">
+                        <div id="die-1" class="die">1</div>
+                        <div id="die-2" class="die">1</div>
+                    </div>
+                    <button id="roll-dice-btn" class="btn" style="width: 100%;" onclick="app.rollDice()">🎲 ROLL DICE</button>
+                    <button id="trade-btn" class="btn btn-secondary" style="width: 100%;" onclick="app.openTradeModal()">🤝 PROPOSE TRADE</button>
+                    <button id="end-turn-btn" class="btn btn-secondary" style="width: 100%; display:none;" onclick="app.endTurn()">PASSS TURN ➡️</button>
+                </div>
+
+                <h3 class="scout-title text-gold" style="font-size: 1rem; margin-top: 15px;">Live Leaderboard</h3>
+                <div id="leaderboard-list" style="display: flex; flex-direction: column; gap: 6px;"></div>
+            </div>
+
+            <!-- CENTER: DIGITAL BOARD -->
+            <div class="board-container" id="board-grid">
+                <div class="board-center">
+                    <h1 class="scout-title text-gold" style="font-size: 1.8rem; margin-bottom: 2px;">SCOUTOPOLY</h1>
+                    <p class="text-muted" style="font-size: 0.75rem; letter-spacing: 2px;">BUILD • SERVE • LEAD</p>
+                    
+                    <div id="active-space-display" style="margin-top: 15px; padding: 10px; background: rgba(0,0,0,0.5); border-radius: 8px; border: 1px solid var(--border); width: 90%; display:none;">
+                        <h4 id="center-space-title" class="text-gold">---</h4>
+                        <p id="center-space-desc" style="font-size: 0.8rem; margin: 4px 0;"></p>
+                        <div id="center-space-actions" style="margin-top: 8px;"></div>
+                    </div>
+                </div>
+                <!-- 32 SPACES RENDERED GENERATIVELY -->
+            </div>
+
+            <!-- RIGHT PANEL: EVENT LOG & CARDS -->
+            <div class="glass-panel panel-scroll">
+                <h3 class="scout-title text-gold" style="font-size: 1rem;">Campsite Feed</h3>
+                <div id="log-feed" class="log-feed"></div>
+
+                <h3 class="scout-title text-gold" style="font-size: 1rem; margin-top: 15px;">Patrol Inventory</h3>
+                <div id="inventory-list" style="font-size: 0.85rem; display: flex; flex-direction: column; gap: 6px;">
+                    <p class="text-muted">No cards held.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: CARD ACTION -->
+    <div id="card-modal" class="modal-overlay">
+        <div class="modal-card glass-panel text-center" style="text-align: center;">
+            <h3 id="card-type-title" class="text-gold" style="font-size: 1.4rem;">CHALLENGE CARD</h3>
+            <hr style="border-color: var(--border); margin: 10px 0;">
+            <h2 id="card-title" style="margin: 15px 0;">---</h2>
+            <p id="card-instruction" style="font-size: 1rem; line-height: 1.4; margin-bottom: 20px;"></p>
+            <div id="card-rewards-box" style="font-weight: bold; margin-bottom: 20px;"></div>
+            <div id="card-action-buttons" style="display: flex; gap: 10px; justify-content: center;"></div>
+        </div>
+    </div>
+
+    <!-- MODAL: STATION TIMER -->
+    <div id="station-modal" class="modal-overlay">
+        <div class="modal-card glass-panel text-center" style="text-align: center;">
+            <h3 class="text-gold">🏕️ STATION CHALLENGE</h3>
+            <h2 id="station-name-title" style="margin: 10px 0;">---</h2>
+            <p style="font-size: 0.9rem; color: var(--text-muted);">Leave the board! Complete the physical 3-minute challenge.</p>
+            <div id="station-timer-display" style="font-size: 3.5rem; font-weight: bold; color: var(--gold); margin: 15px 0;">03:00</div>
+            <div id="station-gm-controls" style="display: flex; gap: 10px; justify-content: center;"></div>
+        </div>
+    </div>
+
+    <!-- MODAL: TRADE -->
+    <div id="trade-modal" class="modal-overlay">
+        <div class="modal-card glass-panel">
+            <h3 class="text-gold">🤝 PROPOSE TRADE</h3>
+            <hr style="border-color: var(--border); margin: 10px 0;">
+            <div class="form-group">
+                <label>Trade Partner Patrol</label>
+                <select id="trade-target-patrol" class="form-control"></select>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div>
+                    <h4>You Offer:</h4>
+                    <input type="number" id="trade-offer-tp" class="form-control" placeholder="TP" style="margin: 5px 0;">
+                </div>
+                <div>
+                    <h4>You Request:</h4>
+                    <input type="number" id="trade-req-tp" class="form-control" placeholder="TP" style="margin: 5px 0;">
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button class="btn" style="flex: 1;" onclick="app.sendTradeProposal()">Send Offer</button>
+                <button class="btn btn-secondary" style="flex: 1;" onclick="app.toggleModal('trade-modal')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: GAME MASTER OVERRIDES -->
+    <div id="gm-modal" class="modal-overlay">
+        <div class="modal-card glass-panel">
+            <h3 class="text-gold">⚙️ GAME MASTER CONTROLS</h3>
+            <hr style="border-color: var(--border); margin: 10px 0;">
+            <div class="form-group">
+                <label>Target Patrol</label>
+                <select id="gm-target-patrol" class="form-control"></select>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px;">
+                <button class="btn btn-sm" onclick="app.gmAdjustTP(50)">+50 TP</button>
+                <button class="btn btn-sm btn-secondary" onclick="app.gmAdjustTP(-50)">-50 TP</button>
+                <button class="btn btn-sm" onclick="app.gmAdjustHonor(5)">+5 Honor</button>
+                <button class="btn btn-sm btn-secondary" onclick="app.gmAdjustHonor(-10)">-10 Honor</button>
+            </div>
+            <button class="btn btn-danger btn-sm" style="width: 100%; margin-bottom: 8px;" onclick="app.gmSendToReflection()">🔒 Send to Reflection (Jail)</button>
+            <button class="btn btn-danger btn-sm" style="width: 100%;" onclick="app.endGame()">🏆 END GAME & CALCULATE WINNERS</button>
+            <button class="btn btn-secondary btn-sm" style="width: 100%; margin-top: 15px;" onclick="app.toggleModal('gm-modal')">Close</button>
+        </div>
+    </div>
+
+    <!-- MODAL: RULES & PATROL GUIDE -->
+    <div id="rules-modal" class="modal-overlay">
+        <div class="modal-card glass-panel">
+            <h3 class="text-gold">📜 OFFICIAL SCOUTOPOLY RULES</h3>
+            <div style="font-size: 0.85rem; line-height: 1.5; max-height: 60vh; overflow-y: auto; margin: 15px 0;">
+                <p><strong>OBJECTIVE:</strong> Build the strongest Scout Kingdom by acquiring bases, completing nighttime challenges, and demonstrating superior Scout Spirit and Honor.</p><br>
+                <p><strong>STARTING SETUP:</strong> Each patrol starts with 500 Trail Points (TP).</p><br>
+                <p><strong>HONOR SYSTEM:</strong></p>
+                <ul>
+                    <li>+10 Honor: Helping another patrol voluntarily</li>
+                    <li>+5 Honor: Exceptional teamwork</li>
+                    <li>-20 Honor: Cheating or dangerous behavior</li>
+                    <li>-10 Honor: Breaking a promise/trade</li>
+                </ul><br>
+                <p><strong>FINAL SCORE FORMULA:</strong></p>
+                <p class="text-gold">Final Score = Trail Points + Owned Base Values + (Honor Score × 10)</p>
+            </div>
+            <button class="btn" style="width: 100%;" onclick="app.toggleModal('rules-modal')">Close Rules</button>
+        </div>
+    </div>
+
+    <div id="patrol-guide-modal" class="modal-overlay">
+        <div class="modal-card glass-panel">
+            <h3 class="text-gold">🏕️ PATROL HOW-TO GUIDE</h3>
+            <div style="font-size: 0.85rem; line-height: 1.5; max-height: 60vh; overflow-y: auto; margin: 15px 0;">
+                <p><strong>1. ROLL & MOVE:</strong> Patrol Leader rolls the dice and moves token around central board.</p>
+                <p><strong>2. RESOLVE SPACE:</strong> Buy base, pay rent, draw card, or visit real-world station.</p>
+                <p><strong>3. BUILD & TRADE:</strong> Upgrade bases or trade with other patrols.</p>
+                <p><strong>4. SAFETY FIRST:</strong> No running in the dark without flashlights. Unsafe behavior = Reflection (Jail)!</p>
+            </div>
+            <button class="btn" style="width: 100%;" onclick="app.toggleModal('patrol-guide-modal')">Got It!</button>
+        </div>
+    </div>
+
+    <!-- MODAL: GAME OVER & AWARDS -->
+    <div id="game-over-modal" class="modal-overlay">
+        <div class="modal-card glass-panel" style="max-width: 700px;">
+            <h1 class="text-gold text-center" style="font-size: 2rem;">🏆 GAME COMPLETE</h1>
+            <p class="text-center text-muted" style="margin-bottom: 20px;">SCOUTOPOLY LEADERBOARD & AWARDS</p>
+            
+            <div id="final-rankings-box" style="margin-bottom: 25px;"></div>
+            <div id="certificates-container"></div>
+            
+            <button class="btn" style="width: 100%; margin-top: 15px;" onclick="window.location.reload()">Back to Main Menu</button>
+        </div>
+    </div>
+
+
+    <!-- FIREBASE & GAME ENGINE SCRIPT -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot, collection, arrayUnion, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        // FIREBASE CONFIGURATION
+        const firebaseConfig = {
+            apiKey: "AIzaSyAHgLnVKtjPPo1vT7S48kWx8yi5Qn606vw",
+            authDomain: "scoutopoly-eb480.firebaseapp.com",
+            projectId: "scoutopoly-eb480",
+            storageBucket: "scoutopoly-eb480.firebasestorage.app",
+            messagingSenderId: "871413360629",
+            appId: "1:871413360629:web:4a48fd6d29aaca6ce9e2bc",
+            measurementId: "G-NGNL76ML11"
+        };
+
+        const appFB = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(appFB);
+        const auth = getAuth(appFB);
+        const db = getFirestore(appFB);
+
+        // DATA DEFINITIONS (PDF SOURCE OF TRUTH)
+        const BASES_DATA = {
+            'camp_gate': { name: 'Camp Gate', cost: 60, upgrade: 30, rents: [2, 10, 30, 90] },
+            'first_aid': { name: 'First Aid Base', cost: 60, upgrade: 30, rents: [4, 20, 60, 180] },
+            'water_point': { name: 'Water Point', cost: 100, upgrade: 50, rents: [6, 30, 90, 270] },
+            'service_project': { name: 'Service Project', cost: 100, upgrade: 50, rents: [6, 30, 90, 270] },
+            'leadership_hill': { name: 'Leadership Hill', cost: 120, upgrade: 60, rents: [8, 40, 100, 300] },
+            'nature_trail': { name: 'Nature Trail', cost: 140, upgrade: 70, rents: [10, 50, 150, 450] },
+            'scout_shop': { name: 'Scout Shop', cost: 140, upgrade: 70, rents: [10, 50, 150, 450] },
+            'second_class_tent': { name: '2nd Class Tent', cost: 160, upgrade: 80, rents: [12, 60, 180, 500] },
+            'community_service': { name: 'Community Service', cost: 180, upgrade: 90, rents: [14, 70, 200, 550] },
+            'knot_corner': { name: 'Knot Corner', cost: 180, upgrade: 90, rents: [14, 70, 200, 550] },
+            'teamwork_bridge': { name: 'Teamwork Bridge', cost: 200, upgrade: 100, rents: [16, 80, 220, 600] },
+            'camp_duty': { name: 'Camp Duty', cost: 220, upgrade: 110, rents: [18, 90, 250, 700] },
+            'obstacle_course': { name: 'Obstacle Course', cost: 220, upgrade: 110, rents: [18, 90, 250, 700] },
+            'trading_post': { name: 'Trading Post', cost: 240, upgrade: 120, rents: [20, 100, 300, 750] },
+            'scout_cooking': { name: 'Scout Cooking', cost: 260, upgrade: 130, rents: [22, 110, 330, 800] },
+            'pioneer_project': { name: 'Pioneer Project', cost: 280, upgrade: 140, rents: [24, 120, 360, 850] },
+            'merit_badge': { name: 'Merit Badge', cost: 280, upgrade: 140, rents: [24, 120, 360, 850] },
+            'service_to_others': { name: 'Service to Others', cost: 300, upgrade: 150, rents: [26, 130, 390, 900] },
+            'teamwork_camp': { name: 'Teamwork Camp', cost: 320, upgrade: 160, rents: [28, 150, 450, 1000] },
+            'final_flame': { name: 'Final Flame', cost: 400, upgrade: 200, rents: [50, 200, 600, 1400] }
+        };
+
+        const BOARD_LAYOUT = [
+            { id: 0, name: 'START', type: 'start', desc: 'Collect +200 TP when passing!' },
+            { id: 1, name: 'Camp Gate', type: 'base', baseKey: 'camp_gate' },
+            { id: 2, name: 'Opportunity', type: 'opportunity' },
+            { id: 3, name: 'First Aid Base', type: 'base', baseKey: 'first_aid' },
+            { id: 4, name: 'Scout Law', type: 'scout_law' },
+            { id: 5, name: 'Water Point', type: 'base', baseKey: 'water_point' },
+            { id: 6, name: 'Challenge', type: 'challenge' },
+            { id: 7, name: 'Service Project', type: 'base', baseKey: 'service_project' },
+            { id: 8, name: 'Leadership Hill', type: 'base', baseKey: 'leadership_hill' },
+            { id: 9, name: 'REFLECTION', type: 'reflection', desc: 'Just Visiting or In Reflection' },
+            { id: 10, name: '2nd Class Tent', type: 'base', baseKey: 'second_class_tent' },
+            { id: 11, name: 'Challenge', type: 'challenge' },
+            { id: 12, name: 'Scout Shop', type: 'base', baseKey: 'scout_shop' },
+            { id: 13, name: 'Nature Trail', type: 'base', baseKey: 'nature_trail' },
+            { id: 14, name: 'Night Nav Station', type: 'station', stationName: 'Night Navigation' },
+            { id: 15, name: 'Community Service', type: 'base', baseKey: 'community_service' },
+            { id: 16, name: 'Knot Corner', type: 'base', baseKey: 'knot_corner' },
+            { id: 17, name: 'Teamwork Bridge', type: 'base', baseKey: 'teamwork_bridge' },
+            { id: 18, name: 'FREE CAMPFIRE', type: 'free_campfire', desc: 'Rest safely at the campsite.' },
+            { id: 19, name: 'Camp Duty', type: 'base', baseKey: 'camp_duty' },
+            { id: 20, name: 'Obstacle Course', type: 'base', baseKey: 'obstacle_course' },
+            { id: 21, name: 'Scout Law', type: 'scout_law' },
+            { id: 22, name: 'Trading Post', type: 'base', baseKey: 'trading_post' },
+            { id: 23, name: 'Nature Cons Station', type: 'station', stationName: 'Nature Conservation' },
+            { id: 24, name: 'Scout Cooking', type: 'base', baseKey: 'scout_cooking' },
+            { id: 25, name: 'Pioneer Project', type: 'base', baseKey: 'pioneer_project' },
+            { id: 26, name: 'GO TO REFLECTION', type: 'go_to_reflection', desc: 'Move directly to Reflection!' },
+            { id: 27, name: 'Merit Badge', type: 'base', baseKey: 'merit_badge' },
+            { id: 28, name: 'Service to Others', type: 'base', baseKey: 'service_to_others' },
+            { id: 29, name: 'Scout Spirit', type: 'scout_spirit' },
+            { id: 30, name: 'Teamwork Camp', type: 'base', baseKey: 'teamwork_camp' },
+            { id: 31, name: 'Final Flame', type: 'base', baseKey: 'final_flame' }
+        ];
+
+        const CHALLENGES_DECK = [
+            { title: 'Knot Challenge', text: 'Tie a correct bowline blindfolded in 60 seconds.', reward: 20, penalty: 10 },
+            { title: 'Memory Challenge', text: 'Look at 10 objects for 15 seconds. Name 8 from memory.', reward: 30, penalty: 20 },
+            { title: 'Silent Challenge', text: 'Arrange patrol by birth month without speaking.', reward: 40, penalty: 10 },
+            { title: 'Courage Challenge', text: 'Guide one blindfolded member across a 10m path.', reward: 20, penalty: 20 },
+            { title: 'Honor Challenge', text: 'Give 20 TP to the patrol with the lowest score.', reward: 30, penalty: 10 },
+            { title: 'Teamwork Challenge', text: 'Carry a patrol member across room using only arms.', reward: 40, penalty: 20 },
+            { title: 'Scout Skills', text: 'Bandage a simulated sprained ankle in under 2 minutes.', reward: 20, penalty: 10 },
+            { title: 'Night Adventure', text: 'Find a specific landmark using only a compass bearing.', reward: 30, penalty: 20 },
+            { title: 'Wisdom Challenge', text: 'Riddle: I have a neck but no head, 2 arms but no hands. (Shirt)', reward: 40, penalty: 10 },
+            { title: 'Scout Spirit', text: 'Sing a camp song loudly for 30 seconds.', reward: 20, penalty: 20 }
+        ];
+
+        const OPPORTUNITY_DECK = [
+            { title: 'Lucky Find', text: 'You discovered a hidden Scout box. Collect 50 TP.', effect: (p) => p.tp += 50 },
+            { title: 'Heavy Rain', text: 'Equipment damaged. Pay 30 TP.', effect: (p) => p.tp -= 30 },
+            { title: 'Leadership Bonus', text: 'Excellent leadership shown. Collect 40 TP.', effect: (p) => p.tp += 40 },
+            { title: 'Trailblazer', text: 'Advance to START and collect 200 TP.', effect: (p) => { p.position = 0; p.tp += 200; } },
+            { title: 'Sudden Storm', text: 'Seek shelter! Move to FREE CAMPFIRE.', effect: (p) => p.position = 18 }
+        ];
+
+        const PATROL_ICONS = {
+            'Wolves': '🐺', 'Eagles': '🦅', 'Lions': '🦁', 'Foxes': '🦊',
+            'Dragons': '🐉', 'Owls': '🦉', 'Bears': '🐻', 'Stags': '🦌'
+        };
+
+        // APPLICATION CLASS
+        class ScoutopolyApp {
+            constructor() {
+                this.gameCode = null;
+                this.role = null; // 'GM' or 'PATROL'
+                this.patrolName = null;
+                this.uid = null;
+                this.unsubscribeGame = null;
+                this.gameState = null;
+                this.stationTimer = null;
+            }
+
+            async init() {
+                const creds = await signInAnonymously(auth);
+                this.uid = creds.user.uid;
+                this.renderBoardGrid();
+            }
+
+            renderBoardGrid() {
+                const grid = document.getElementById('board-grid');
+                grid.querySelectorAll('.board-space').forEach(e => e.remove());
+
+                // Perimeter mapping algorithm for 9x9 grid
+                const getGridCoords = (index) => {
+                    if (index < 9) return { r: 9, c: 1 + index };
+                    if (index < 17) return { r: 9 - (index - 8), c: 9 };
+                    if (index < 25) return { r: 1, c: 9 - (index - 16) };
+                    return { r: 1 + (index - 24), c: 1 };
+                };
+
+                BOARD_LAYOUT.forEach((space, idx) => {
+                    const coords = getGridCoords(idx);
+                    const div = document.createElement('div');
+                    div.className = 'board-space';
+                    div.id = `space-${idx}`;
+                    div.style.gridRow = coords.r;
+                    div.style.gridColumn = coords.c;
+
+                    let headerBg = '#333';
+                    if (space.type === 'base') headerBg = '#2e5a38';
+                    if (space.type === 'challenge') headerBg = '#e65c00';
+                    if (space.type === 'opportunity') headerBg = '#2196f3';
+                    if (space.type === 'station') headerBg = '#9c27b0';
+
+                    const baseData = space.baseKey ? BASES_DATA[space.baseKey] : null;
+
+                    div.innerHTML = `
+                        <div class="space-header" style="background:${headerBg};">${space.type}</div>
+                        <div class="space-name">${space.name}</div>
+                        ${baseData ? `<div class="space-price">${baseData.cost} TP</div>` : ''}
+                        <div class="space-tokens" id="tokens-space-${idx}"></div>
+                    `;
+                    div.onclick = () => this.inspectSpace(idx);
+                    grid.appendChild(div);
+                });
+            }
+
+            showJoinForm() {
+                document.getElementById('join-form').style.display = 'block';
+            }
+
+            async createGame() {
+                const name = document.getElementById('player-name-input').value || 'Game Master';
+                this.gameCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+                this.role = 'GM';
+
+                const initialBases = {};
+                Object.keys(BASES_DATA).forEach(k => { initialBases[k] = { owner: null, level: 0 }; });
+
+                await setDoc(doc(db, 'games', this.gameCode), {
+                    hostId: this.uid,
+                    gmName: name,
+                    status: 'LOBBY',
+                    currentTurnIndex: 0,
+                    turnPhase: 'ROLL',
+                    patrolsOrder: [],
+                    bases: initialBases,
+                    eventLog: [`Game created by GM ${name}`],
+                    createdAt: Date.now()
+                });
+
+                this.enterLobby();
+            }
+
+            async joinGame() {
+                const name = document.getElementById('player-name-input').value || 'Scout';
+                const code = document.getElementById('join-code-input').value.toUpperCase();
+                const patrol = document.getElementById('patrol-select').value;
+
+                const gameRef = doc(db, 'games', code);
+                const snap = await getDoc(gameRef);
+
+                if (!snap.exists()) { alert('Game room not found!'); return; }
+
+                this.gameCode = code;
+                this.role = 'PATROL';
+                this.patrolName = patrol;
+
+                await setDoc(doc(db, 'games', code, 'patrols', patrol), {
+                    name: patrol,
+                    token: PATROL_ICONS[patrol],
+                    tp: 500, // Official Starting TP
+                    honor: 0,
+                    position: 0,
+                    inReflection: false,
+                    cards: []
+                });
+
+                await updateDoc(gameRef, {
+                    patrolsOrder: arrayUnion(patrol)
+                });
+
+                this.enterLobby();
+            }
+
+            enterLobby() {
+                document.getElementById('lobby-waiting').style.display = 'block';
+                document.getElementById('auth-section').style.display = 'none';
+                document.getElementById('room-code-display').innerText = this.gameCode;
+
+                if (this.role === 'GM') {
+                    document.getElementById('start-game-btn').style.display = 'block';
+                }
+
+                this.subscribeToGame();
+            }
+
+            subscribeToGame() {
+                this.unsubscribeGame = onSnapshot(doc(db, 'games', this.gameCode), (docSnap) => {
+                    if (!docSnap.exists()) return;
+                    this.gameState = docSnap.data();
+                    this.updateUI();
+                });
+
+                // Also listen to patrols collection
+                onSnapshot(collection(db, 'games', this.gameCode, 'patrols'), (snap) => {
+                    const patrols = [];
+                    snap.forEach(d => patrols.push(d.data()));
+                    this.patrolsData = patrols;
+                    this.updatePatrolsUI();
+                });
+            }
+
+            async startGame() {
+                if (this.role !== 'GM') return;
+                await updateDoc(doc(db, 'games', this.gameCode), {
+                    status: 'PLAYING',
+                    eventLog: arrayUnion('Game started! Roll dice to begin.')
+                });
+            }
+
+            updateUI() {
+                if (this.gameState.status === 'PLAYING') {
+                    document.getElementById('lobby-view').classList.remove('active');
+                    document.getElementById('game-view').classList.add('active');
+                    document.getElementById('hud-room-code').innerText = this.gameCode;
+                    document.getElementById('hud-role').innerText = this.role;
+
+                    if (this.role === 'GM') {
+                        document.getElementById('gm-panel-btn').style.display = 'inline-block';
+                    }
+
+                    const currentPatrol = this.gameState.patrolsOrder[this.gameState.currentTurnIndex];
+                    document.getElementById('turn-patrol-name').innerText = currentPatrol || 'None';
+                    document.getElementById('turn-phase-name').innerText = this.gameState.turnPhase;
+
+                    // Update Roll Button Visibility
+                    const isMyTurn = (this.role === 'PATROL' && this.patrolName === currentPatrol);
+                    document.getElementById('roll-dice-btn').style.display = (isMyTurn && this.gameState.turnPhase === 'ROLL') ? 'block' : 'none';
+                    document.getElementById('end-turn-btn').style.display = (isMyTurn && this.gameState.turnPhase === 'ACTIONS') ? 'block' : 'none';
+
+                    // Update Logs
+                    const logContainer = document.getElementById('log-feed');
+                    logContainer.innerHTML = (this.gameState.eventLog || []).slice(-10).reverse().map(l => `<div class="log-item">${l}</div>`).join('');
+                } else if (this.gameState.status === 'FINISHED') {
+                    this.showGameOverModal();
+                }
+
+                // Render connected list in lobby
+                if (document.getElementById('connected-patrols-list')) {
+                    document.getElementById('connected-patrols-list').innerHTML = (this.gameState.patrolsOrder || []).map(p => `
+                        <div style="padding: 8px; background: rgba(255,255,255,0.05); border-radius: 6px;">${PATROL_ICONS[p] || '🚩'} ${p}</div>
+                    `).join('');
+                }
+            }
+
+            updatePatrolsUI() {
+                if (!this.patrolsData) return;
+
+                // Clear all tokens
+                document.querySelectorAll('.space-tokens').forEach(el => el.innerHTML = '');
+
+                // Render tokens and update leaderboard
+                const lb = document.getElementById('leaderboard-list');
+                lb.innerHTML = '';
+
+                this.patrolsData.forEach(p => {
+                    // Board Token
+                    const tokenContainer = document.getElementById(`tokens-space-${p.position}`);
+                    if (tokenContainer) {
+                        const t = document.createElement('div');
+                        t.className = 'token';
+                        t.style.background = '#2e5a38';
+                        t.innerText = p.token;
+                        tokenContainer.appendChild(t);
+                    }
+
+                    // Leaderboard
+                    lb.innerHTML += `
+                        <div style="padding: 6px 10px; background: rgba(0,0,0,0.3); border-radius: 6px; display: flex; justify-content: space-between; font-size:0.8rem;">
+                            <span>${p.token} ${p.name}</span>
+                            <span class="text-gold">${p.tp} TP | 🏅 ${p.honor}</span>
+                        </div>
+                    `;
+
+                    // My Patrol Dash
+                    if (this.role === 'PATROL' && p.name === this.patrolName) {
+                        document.getElementById('dash-patrol-name').innerText = p.name;
+                        document.getElementById('dash-patrol-token').innerText = p.token;
+                        document.getElementById('dash-tp').innerText = `${p.tp} TP`;
+                        document.getElementById('dash-honor').innerText = p.honor;
+                    }
+                });
+            }
+
+            async rollDice() {
+                const d1 = Math.floor(Math.random() * 6) + 1;
+                const d2 = Math.floor(Math.random() * 6) + 1;
+                const total = d1 + d2;
+
+                document.getElementById('die-1').innerText = d1;
+                document.getElementById('die-2').innerText = d2;
+
+                const myPatrol = this.patrolsData.find(p => p.name === this.patrolName);
+                let newPos = (myPatrol.position + total);
+                let passedStart = false;
+
+                if (newPos >= 32) {
+                    newPos %= 32;
+                    passedStart = true;
+                }
+
+                // Pass START Rule (+200 TP)
+                let tpGain = passedStart ? 200 : 0;
+
+                await updateDoc(doc(db, 'games', this.gameCode, 'patrols', this.patrolName), {
+                    position: newPos,
+                    tp: myPatrol.tp + tpGain
+                });
+
+                let logMsg = `${this.patrolName} rolled ${total} (${d1}+${d2}) and moved to ${BOARD_LAYOUT[newPos].name}.`;
+                if (passedStart) logMsg += ' Passed START (+200 TP)!';
+
+                await updateDoc(doc(db, 'games', this.gameCode), {
+                    turnPhase: 'RESOLVE',
+                    eventLog: arrayUnion(logMsg)
+                });
+
+                this.resolveSpace(newPos);
+            }
+
+            async resolveSpace(pos) {
+                const space = BOARD_LAYOUT[pos];
+
+                if (space.type === 'base') {
+                    const baseInfo = BASES_DATA[space.baseKey];
+                    const baseState = this.gameState.bases[space.baseKey];
+
+                    if (!baseState.owner) {
+                        // Unowned - Offer Buy
+                        this.showCenterAction(`${space.name} Available!`, `Cost: ${baseInfo.cost} TP`, `
+                            <button class="btn btn-sm" onclick="app.buyBase('${space.baseKey}')">Buy for ${baseInfo.cost} TP</button>
+                            <button class="btn btn-secondary btn-sm" onclick="app.finishResolution()">Pass</button>
+                        `);
+                    } else if (baseState.owner !== this.patrolName) {
+                        // Pay Rent
+                        const rent = baseInfo.rents[baseState.level];
+                        this.showCenterAction(`RENT DUE`, `Pay ${rent} TP rent to ${baseState.owner}`, `
+                            <button class="btn btn-danger btn-sm" onclick="app.payRent('${baseState.owner}', ${rent})">Pay Rent (${rent} TP)</button>
+                        `);
+                    } else {
+                        // Own base - Offer Upgrade
+                        if (baseState.level < 3) {
+                            this.showCenterAction(`Your Base`, `Upgrade cost: ${baseInfo.upgrade} TP`, `
+                                <button class="btn btn-sm" onclick="app.upgradeBase('${space.baseKey}')">Upgrade (${baseInfo.upgrade} TP)</button>
+                                <button class="btn btn-secondary btn-sm" onclick="app.finishResolution()">Skip</button>
+                            `);
+                        } else {
+                            this.finishResolution();
+                        }
+                    }
+                } else if (space.type === 'challenge') {
+                    const card = CHALLENGES_DECK[Math.floor(Math.random() * CHALLENGES_DECK.length)];
+                    this.showCardModal('CHALLENGE', card.title, card.text, `Reward: +${card.reward} TP | Failure: -${card.penalty} TP`, `
+                        <button class="btn" onclick="app.gmVerifyChallenge('${card.title}', ${card.reward})">GM: PASS (+${card.reward} TP)</button>
+                        <button class="btn btn-danger" onclick="app.gmVerifyChallenge('${card.title}', -${card.penalty})">GM: FAIL (-${card.penalty} TP)</button>
+                    `);
+                } else if (space.type === 'opportunity') {
+                    const card = OPPORTUNITY_DECK[Math.floor(Math.random() * OPPORTUNITY_DECK.length)];
+                    const myPatrol = this.patrolsData.find(p => p.name === this.patrolName);
+                    card.effect(myPatrol);
+                    await updateDoc(doc(db, 'games', this.gameCode, 'patrols', this.patrolName), { tp: myPatrol.tp, position: myPatrol.position });
+                    this.showCardModal('OPPORTUNITY', card.title, card.text, '', `<button class="btn" onclick="app.closeCardModal()">Continue</button>`);
+                } else if (space.type === 'station') {
+                    this.startStationTimer(space.stationName);
+                } else if (space.type === 'go_to_reflection') {
+                    await updateDoc(doc(db, 'games', this.gameCode, 'patrols', this.patrolName), { position: 9, inReflection: true });
+                    this.finishResolution();
+                } else {
+                    this.finishResolution();
+                }
+            }
+
+            async buyBase(baseKey) {
+                const baseInfo = BASES_DATA[baseKey];
+                const myPatrol = this.patrolsData.find(p => p.name === this.patrolName);
+
+                if (myPatrol.tp < baseInfo.cost) { alert('Not enough Trail Points!'); return; }
+
+                await updateDoc(doc(db, 'games', this.gameCode, 'patrols', this.patrolName), {
+                    tp: myPatrol.tp - baseInfo.cost
+                });
+
+                const basesUpdate = { ...this.gameState.bases };
+                basesUpdate[baseKey] = { owner: this.patrolName, level: 0 };
+
+                await updateDoc(doc(db, 'games', this.gameCode), {
+                    bases: basesUpdate,
+                    eventLog: arrayUnion(`${this.patrolName} bought ${baseInfo.name} for ${baseInfo.cost} TP!`)
+                });
+
+                this.finishResolution();
+            }
+
+            async payRent(owner, amount) {
+                const myPatrol = this.patrolsData.find(p => p.name === this.patrolName);
+                const ownerPatrol = this.patrolsData.find(p => p.name === owner);
+
+                await updateDoc(doc(db, 'games', this.gameCode, 'patrols', this.patrolName), { tp: myPatrol.tp - amount });
+                await updateDoc(doc(db, 'games', this.gameCode, 'patrols', owner), { tp: ownerPatrol.tp + amount });
+
+                await updateDoc(doc(db, 'games', this.gameCode), {
+                    eventLog: arrayUnion(`${this.patrolName} paid ${amount} TP rent to ${owner}.`)
+                });
+
+                this.finishResolution();
+            }
+
+            async finishResolution() {
+                document.getElementById('active-space-display').style.display = 'none';
+                await updateDoc(doc(db, 'games', this.gameCode), { turnPhase: 'ACTIONS' });
+            }
+
+            async endTurn() {
+                const nextIndex = (this.gameState.currentTurnIndex + 1) % this.gameState.patrolsOrder.length;
+                await updateDoc(doc(db, 'games', this.gameCode), {
+                    currentTurnIndex: nextIndex,
+                    turnPhase: 'ROLL'
+                });
+            }
+
+            // MODAL & DISPLAY HELPERS
+            showCenterAction(title, desc, htmlActions) {
+                const box = document.getElementById('active-space-display');
+                box.style.display = 'block';
+                document.getElementById('center-space-title').innerText = title;
+                document.getElementById('center-space-desc').innerText = desc;
+                document.getElementById('center-space-actions').innerHTML = htmlActions;
+            }
+
+            showCardModal(type, title, text, rewards, buttonsHtml) {
+                document.getElementById('card-type-title').innerText = type;
+                document.getElementById('card-title').innerText = title;
+                document.getElementById('card-instruction').innerText = text;
+                document.getElementById('card-rewards-box').innerText = rewards;
+                document.getElementById('card-action-buttons').innerHTML = buttonsHtml;
+                this.toggleModal('card-modal');
+            }
+
+            closeCardModal() {
+                this.toggleModal('card-modal');
+                this.finishResolution();
+            }
+
+            async gmVerifyChallenge(title, tpDelta) {
+                const currentPatrol = this.gameState.patrolsOrder[this.gameState.currentTurnIndex];
+                const pData = this.patrolsData.find(p => p.name === currentPatrol);
+
+                await updateDoc(doc(db, 'games', this.gameCode, 'patrols', currentPatrol), {
+                    tp: pData.tp + tpDelta
+                });
+
+                await updateDoc(doc(db, 'games', this.gameCode), {
+                    eventLog: arrayUnion(`GM verified ${currentPatrol} challenge '${title}': ${tpDelta >= 0 ? '+' : ''}${tpDelta} TP.`)
+                });
+
+                this.closeCardModal();
+            }
+
+            startStationTimer(stationName) {
+                document.getElementById('station-name-title').innerText = stationName;
+                this.toggleModal('station-modal');
+                let secs = 180;
+
+                clearInterval(this.stationTimer);
+                this.stationTimer = setInterval(() => {
+                    secs--;
+                    const m = String(Math.floor(secs / 60)).padStart(2, '0');
+                    const s = String(secs % 60).padStart(2, '0');
+                    document.getElementById('station-timer-display').innerText = `${m}:${s}`;
+
+                    if (secs <= 0) {
+                        clearInterval(this.stationTimer);
+                    }
+                }, 1000);
+
+                const gmControls = document.getElementById('station-gm-controls');
+                gmControls.innerHTML = `
+                    <button class="btn" onclick="app.gmVerifyStation(true)">Pass (+50 TP / Free Upgrade)</button>
+                    <button class="btn btn-secondary" onclick="app.gmVerifyStation(false)">Close</button>
+                `;
+            }
+
+            async gmVerifyStation(success) {
+                clearInterval(this.stationTimer);
+                this.toggleModal('station-modal');
+                if (success) {
+                    const currentPatrol = this.gameState.patrolsOrder[this.gameState.currentTurnIndex];
+                    const pData = this.patrolsData.find(p => p.name === currentPatrol);
+                    await updateDoc(doc(db, 'games', this.gameCode, 'patrols', currentPatrol), { tp: pData.tp + 50 });
+                }
+                this.finishResolution();
+            }
+
+            toggleModal(id) {
+                const m = document.getElementById(id);
+                m.classList.toggle('active');
+            }
+
+            inspectSpace(idx) {
+                const space = BOARD_LAYOUT[idx];
+                alert(`Space #${idx}: ${space.name} (${space.type.toUpperCase()})`);
+            }
+
+            // GM OVERRIDES
+            async gmAdjustTP(amt) {
+                const target = document.getElementById('gm-target-patrol').value;
+                const p = this.patrolsData.find(x => x.name === target);
+                if (p) {
+                    await updateDoc(doc(db, 'games', this.gameCode, 'patrols', target), { tp: p.tp + amt });
+                }
+            }
+
+            async gmAdjustHonor(amt) {
+                const target = document.getElementById('gm-target-patrol').value;
+                const p = this.patrolsData.find(x => x.name === target);
+                if (p) {
+                    await updateDoc(doc(db, 'games', this.gameCode, 'patrols', target), { honor: p.honor + amt });
+                }
+            }
+
+            async gmSendToReflection() {
+                const target = document.getElementById('gm-target-patrol').value;
+                await updateDoc(doc(db, 'games', this.gameCode, 'patrols', target), { position: 9, inReflection: true });
+            }
+
+            async endGame() {
+                if (confirm("End game and calculate official scores?")) {
+                    await updateDoc(doc(db, 'games', this.gameCode), { status: 'FINISHED' });
+                }
+            }
+
+            showGameOverModal() {
+                this.toggleModal('game-over-modal');
+                const box = document.getElementById('final-rankings-box');
+                const certs = document.getElementById('certificates-container');
+
+                // CALCULATE SCORES EXACT FORMULA: TP + Base Values + (Honor * 10)
+                const scored = this.patrolsData.map(p => {
+                    let baseSum = 0;
+                    Object.entries(this.gameState.bases).forEach(([bKey, bState]) => {
+                        if (bState.owner === p.name) baseSum += BASES_DATA[bKey].cost;
+                    });
+                    const finalScore = p.tp + baseSum + (p.honor * 10);
+                    return { ...p, baseSum, finalScore };
+                }).sort((a,b) => b.finalScore - a.finalScore);
+
+                box.innerHTML = scored.map((p, i) => `
+                    <div style="padding: 12px; background: rgba(0,0,0,0.4); border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <strong>#${i+1} ${p.token} ${p.name}</strong>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">TP: ${p.tp} | Bases: ${p.baseSum} TP | Honor: ${p.honor} (x10=${p.honor*10})</div>
+                        </div>
+                        <h2 class="text-gold">${p.finalScore} PTS</h2>
+                    </div>
+                `).join('');
+
+                // Render 6 Official Award Certificates
+                const awards = ['THE LEGENDARY PATROL', 'WISEST PATROL', 'BRAVEST PATROL', 'MOST HONORABLE PATROL', 'BEST TEAMWORK', 'BEST SCOUT SPIRIT'];
+                certs.innerHTML = awards.map((award, i) => {
+                    const winner = scored[i % scored.length];
+                    return `
+                        <div class="certificate">
+                            <h2>SCOUTOPOLY</h2>
+                            <h3>${award}</h3>
+                            <p style="margin: 15px 0;">Is hereby awarded to</p>
+                            <h1 style="color: #8b6b23; font-family: 'Cinzel';">${winner.name} ${winner.token}</h1>
+                            <p style="font-size: 0.8rem; margin-top: 15px;">For outstanding performance, skill, and scout spirit.</p>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        const app = new ScoutopolyApp();
+        window.app = app;
+        window.onload = () => app.init();
+    </script>
+</body>
 </html>
