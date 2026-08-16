@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scoutopoly | Admin Control Panel & Game Dashboard</title>
+    <title>Scoutopoly | Game Master Control Panel & Game Dashboard</title>
     <style>
         /* =========================================================
            CSS VARIABLES & RESET
@@ -15,7 +15,6 @@
             --accent-gold: #F4D03F;      /* Scout/Monopoly Gold */
             --accent-cyan: #00E5FF;      /* Modern Game Accent */
             --accent-purple: #9B59B6;    /* Game Master */
-            --accent-blue: #3498DB;      /* Moderator */
             --text-light: #F0F4F1;       
             --text-dark: #0A1F13;        
             --danger: #FF4757;
@@ -139,11 +138,11 @@
             display: flex; justify-content: space-between; align-items: center; padding: 15px 30px;
             background: rgba(0,0,0,0.4); backdrop-filter: blur(10px); border-bottom: 1px solid var(--glass-border);
         }
-        .nav-brand { font-size: 1.5rem; font-weight: 800; color: var(--accent-gold); letter-spacing: 1px; }
+        .nav-brand { font-size: 1.5rem; font-weight: 800; color: var(--accent-gold); letter-spacing: 1px; display: flex; align-items: center; gap: 15px; }
         .nav-user { display: flex; align-items: center; gap: 15px; }
 
         /* =========================================================
-           ADMIN DASHBOARD COMPONENTS
+           ADMIN DASHBOARD (GAME MASTER CONTROL PANEL)
            ========================================================= */
         #view-admin .dashboard-content { padding: 30px; max-width: 1400px; margin: 0 auto; width: 100%; }
         .admin-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 25px; flex-wrap: wrap; gap: 15px; }
@@ -174,9 +173,7 @@
         
         /* Role & Status Badges */
         .badge { padding: 5px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; letter-spacing: 0.5px; display: inline-flex; align-items: center; gap: 5px; }
-        .badge-admin { background: rgba(244, 208, 63, 0.2); color: var(--accent-gold); border: 1px solid rgba(244, 208, 63, 0.3); }
         .badge-gm { background: rgba(155, 89, 182, 0.2); color: var(--accent-purple); border: 1px solid rgba(155, 89, 182, 0.3); }
-        .badge-mod { background: rgba(52, 152, 219, 0.2); color: var(--accent-blue); border: 1px solid rgba(52, 152, 219, 0.3); }
         .badge-player { background: rgba(255, 255, 255, 0.1); color: #FFF; border: 1px solid rgba(255, 255, 255, 0.2); }
         
         .status-active { color: var(--success); }
@@ -220,7 +217,6 @@
         .role-panel { margin-top: 20px; padding: 25px; border-radius: var(--border-radius); background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); }
         .role-panel h3 { margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
         .role-panel-gm h3 { color: var(--accent-purple); }
-        .role-panel-mod h3 { color: var(--accent-blue); }
         .role-actions { display: flex; gap: 15px; flex-wrap: wrap; }
 
         /* =========================================================
@@ -273,7 +269,7 @@
             
             <div class="login-toggle">
                 <div class="login-toggle-btn active" id="tab-member">MEMBER</div>
-                <div class="login-toggle-btn" id="tab-admin">ADMIN</div>
+                <div class="login-toggle-btn" id="tab-admin">GAME MASTER</div>
             </div>
 
             <!-- Visible Login Error Message Box -->
@@ -294,13 +290,16 @@
     </div>
 
     <!-- =========================================================
-         VIEW: ADMIN DASHBOARD
+         VIEW: ADMIN DASHBOARD (GAME MASTER CONTROL PANEL)
          ========================================================= -->
     <div id="view-admin" class="view hidden">
         <nav class="navbar">
-            <div class="nav-brand">🎲 SCOUTOPOLY <span>ADMIN CONTROL PANEL</span></div>
+            <div class="nav-brand">
+                <span>🎲 SCOUTOPOLY</span>
+                <button class="btn btn-gold" onclick="app.enterGameAsGM()" style="padding: 6px 14px; font-size: 0.8rem;">🎲 PLAY GAME</button>
+            </div>
             <div class="nav-user">
-                <span id="admin-display-name">Admin</span>
+                <span id="admin-display-name">Chief Administrator</span>
                 <button class="btn btn-outline" onclick="app.logout()" style="padding: 8px 16px; font-size: 0.85rem;">Logout</button>
             </div>
         </nav>
@@ -308,8 +307,8 @@
         <div class="dashboard-content fade-in">
             <div class="admin-header">
                 <div>
-                    <h1>ADMIN CONTROL PANEL</h1>
-                    <p style="color: var(--accent-cyan);">Manage Players • Accounts • Game Access</p>
+                    <h1>👑 GAME MASTER CONTROL PANEL</h1>
+                    <p style="color: var(--accent-cyan);">Manage Members • Create Member • Manage Games • Moderate Players • Settings</p>
                 </div>
                 <button class="btn btn-gold" onclick="app.openModal('create-member-modal')">+ CREATE MEMBER ACCOUNT</button>
             </div>
@@ -320,8 +319,6 @@
                 <div class="stat-card"><h3>🟢 Active</h3><div class="value" id="stat-active-users">0</div></div>
                 <div class="stat-card"><h3>🎲 Active Games</h3><div class="value" id="stat-active-games">0</div></div>
                 <div class="stat-card"><h3>👑 Game Masters</h3><div class="value" id="stat-gms">0</div></div>
-                <div class="stat-card"><h3>🛡️ Moderators</h3><div class="value" id="stat-mods">0</div></div>
-                <div class="stat-card"><h3>⭐ Admins</h3><div class="value" id="stat-admins">0</div></div>
             </div>
 
             <div class="admin-layout">
@@ -331,10 +328,8 @@
                         <input type="text" class="search-input" id="search-members" placeholder="🔍 Search players by name, username, patrol...">
                         <select class="filter-select" id="filter-role">
                             <option value="all">All Roles</option>
-                            <option value="player">Players</option>
-                            <option value="gameMaster">Game Masters</option>
-                            <option value="gameModerator">Moderators</option>
-                            <option value="admin">Admins</option>
+                            <option value="player">NORMAL PLAYER</option>
+                            <option value="gameMaster">GAME MASTER</option>
                         </select>
                         <select class="filter-select" id="filter-status">
                             <option value="all">All Status</option>
@@ -351,7 +346,7 @@
                                     <th>Username</th>
                                     <th>Role</th>
                                     <th>Patrol</th>
-                                    <th>Rank</th>
+                                    <th>Scout Rank</th>
                                     <th>Status</th>
                                     <th>Actions</th>
                                 </tr>
@@ -413,7 +408,7 @@
     </div>
 
     <!-- =========================================================
-         MODALS (ADMIN CONTROLS)
+         MODALS (GAME MASTER CONTROLS)
          ========================================================= -->
     
     <!-- 1. CREATE MEMBER MODAL -->
@@ -424,9 +419,6 @@
                 <button class="close-modal" onclick="app.closeModal('create-member-modal')">&times;</button>
             </div>
             <form id="create-member-form">
-                <p style="font-size: 0.8rem; color: var(--accent-cyan); margin-bottom: 15px;">
-                    <em>Firestore Security Rules & Username index will be automatically updated.</em>
-                </p>
                 <div class="form-row">
                     <div class="form-group"><label>Full Name *</label><input type="text" id="new-name" required></div>
                     <div class="form-group"><label>Username *</label><input type="text" id="new-username" required pattern="[a-zA-Z0-9_]+"></div>
@@ -440,24 +432,17 @@
                     <div class="form-group">
                         <label>Scout Rank *</label>
                         <select id="new-rank" required>
-                            <option value="Tenderfoot">Tenderfoot</option>
-                            <option value="Second Class">Second Class</option>
-                            <option value="First Class">First Class</option>
-                            <option value="Star">Star</option>
-                            <option value="Life">Life</option>
-                            <option value="Eagle">Eagle</option>
-                            <option value="Rover">Rover</option>
-                            <option value="Leader">Leader</option>
+                            <option value="CP">CP</option>
+                            <option value="SP">SP</option>
+                            <option value="MEMBER">MEMBER</option>
                         </select>
                     </div>
                 </div>
                 <div class="form-group">
                     <label>Player Role *</label>
                     <select id="new-role" required style="border-color: var(--accent-gold);">
-                        <option value="player">🎲 PLAYER - Normal gameplay</option>
-                        <option value="gameMaster">👑 GAME MASTER - Manage games & rooms</option>
-                        <option value="gameModerator">🛡️ GAME MODERATOR - Monitor & kick players</option>
-                        <option value="admin">⭐ ADMIN - Full system control</option>
+                        <option value="player">🎮 NORMAL PLAYER</option>
+                        <option value="gameMaster">👑 GAME MASTER</option>
                     </select>
                 </div>
                 <div class="form-row">
@@ -485,7 +470,7 @@
             </div>
             <div class="profile-view-stats">
                 <div><strong>Patrol:</strong> <span id="vp-patrol"></span></div>
-                <div><strong>Rank:</strong> <span id="vp-rank"></span></div>
+                <div><strong>Scout Rank:</strong> <span id="vp-rank"></span></div>
                 <div><strong>Status:</strong> <span id="vp-status"></span></div>
                 <div><strong>Joined:</strong> <span id="vp-joined"></span></div>
             </div>
@@ -498,23 +483,37 @@
         </div>
     </div>
 
-    <!-- 3. EDIT ROLE MODAL -->
-    <div class="modal-overlay" id="edit-role-modal">
-        <div class="modal-content" style="max-width: 400px;">
+    <!-- 3. EDIT MEMBER MODAL -->
+    <div class="modal-overlay" id="edit-member-modal">
+        <div class="modal-content">
             <div class="modal-header">
-                <h2>Change Role</h2>
-                <button class="close-modal" onclick="app.closeModal('edit-role-modal')">&times;</button>
+                <h2>Edit Member</h2>
+                <button class="close-modal" onclick="app.closeModal('edit-member-modal')">&times;</button>
             </div>
-            <form id="edit-role-form">
-                <input type="hidden" id="er-uid">
-                <p style="margin-bottom: 15px;">Update role for <strong id="er-username" style="color:var(--accent-cyan)"></strong></p>
-                <select id="er-role" required style="border-color: var(--accent-gold);">
-                    <option value="player">🎲 PLAYER</option>
-                    <option value="gameMaster">👑 GAME MASTER</option>
-                    <option value="gameModerator">🛡️ GAME MODERATOR</option>
-                    <option value="admin">⭐ ADMIN</option>
-                </select>
-                <button type="submit" class="btn btn-gold" style="width: 100%;">SAVE ROLE</button>
+            <form id="edit-member-form">
+                <input type="hidden" id="em-uid">
+                <div class="form-row">
+                    <div class="form-group"><label>Full Name *</label><input type="text" id="em-name" required></div>
+                    <div class="form-group"><label>Patrol *</label><input type="text" id="em-patrol" required></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Scout Rank *</label>
+                        <select id="em-rank" required>
+                            <option value="CP">CP</option>
+                            <option value="SP">SP</option>
+                            <option value="MEMBER">MEMBER</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Player Role *</label>
+                        <select id="em-role" required style="border-color: var(--accent-gold);">
+                            <option value="player">🎮 NORMAL PLAYER</option>
+                            <option value="gameMaster">👑 GAME MASTER</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-gold" style="width: 100%;" id="edit-btn">SAVE CHANGES</button>
             </form>
         </div>
     </div>
@@ -566,17 +565,27 @@
         }
 
         const rolePermissions = {
-            player: { playGame: true, createGame: false, manageGame: false, moderateGame: false, managePlayers: false, manageAccounts: false, manageRoles: false },
-            gameMaster: { playGame: true, createGame: true, manageGame: true, moderateGame: false, managePlayers: true, manageAccounts: false, manageRoles: false },
-            gameModerator: { playGame: true, createGame: false, manageGame: false, moderateGame: true, managePlayers: true, manageAccounts: false, manageRoles: false },
-            admin: { playGame: true, createGame: true, manageGame: true, moderateGame: true, managePlayers: true, manageAccounts: true, manageRoles: true }
+            player: {
+                playGame: true,
+                manageGame: false,
+                moderatePlayers: false,
+                manageAccounts: false,
+                manageRoles: false,
+                accessAdminPanel: false
+            },
+            gameMaster: {
+                playGame: true,
+                manageGame: true,
+                moderatePlayers: true,
+                manageAccounts: true,
+                manageRoles: true,
+                accessAdminPanel: true
+            }
         };
 
         const roleDisplay = {
-            player: { label: '🎲 PLAYER', class: 'badge-player' },
-            gameMaster: { label: '👑 GAME MASTER', class: 'badge-gm' },
-            gameModerator: { label: '🛡️ GAME MODERATOR', class: 'badge-mod' },
-            admin: { label: '⭐ ADMIN', class: 'badge-admin' }
+            player: { label: '🎮 NORMAL PLAYER', class: 'badge-player' },
+            gameMaster: { label: '👑 GAME MASTER', class: 'badge-gm' }
         };
 
         let currentUserData = null;
@@ -628,48 +637,76 @@
                 await addDoc(collection(db, "activity"), {
                     text: text, type: type, timestamp: serverTimestamp()
                 });
-                if(currentUserData && currentUserData.role === 'admin') loadActivityFeed();
+                if(currentUserData && currentUserData.role === 'gameMaster') loadActivityFeed();
             } catch (e) { console.error("Failed to log activity", e); }
         };
 
         // =========================================================
-        // AUTHENTICATION & STATE LISTENER
+        // AUTHENTICATION & STATE LISTENER WITH CHEF MIGRATION
         // =========================================================
         console.log("[Scoutopoly] Checking authentication state");
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 console.log("[Scoutopoly] Authenticated user UID:", user.uid);
-                console.log("[Scoutopoly] Loading user profile");
                 try {
-                    const userDoc = await getDoc(doc(db, "users", user.uid));
+                    let userDocRef = doc(db, "users", user.uid);
+                    let userDoc = await getDoc(userDocRef);
+
+                    let userData = userDoc.exists() ? userDoc.data() : null;
+
+                    // Automatically migrate or initialize Chef account if username is chef or email matches
+                    if (user.email === 'chef@scoutopoly.local' || (userData && userData.username === 'chef')) {
+                        console.log("[Scoutopoly] Migrating / Verifying Chef account to gameMaster");
+                        const chefPayload = {
+                            username: "chef",
+                            displayName: "Chief Administrator",
+                            role: "gameMaster",
+                            patrol: "HQ",
+                            scoutRank: "CP",
+                            active: true,
+                            updatedAt: serverTimestamp()
+                        };
+                        if (!userDoc.exists()) {
+                            chefPayload.createdAt = serverTimestamp();
+                        }
+                        await setDoc(userDocRef, chefPayload, { merge: true });
+                        
+                        await setDoc(doc(db, "usernames", "chef"), {
+                            username: "chef", email: "chef@scoutopoly.local", uid: user.uid
+                        }, { merge: true });
+
+                        userDoc = await getDoc(userDocRef);
+                        userData = userDoc.data();
+                    }
+
                     if (userDoc.exists()) {
-                        currentUserData = { id: user.uid, ...userDoc.data() };
+                        currentUserData = { id: user.uid, ...userData };
                         console.log("[Scoutopoly] User role:", currentUserData.role);
                         
-                        if(!currentUserData.active && currentUserData.role !== 'admin') {
-                            showLoginError("❌ This account has been disabled. Contact the administrator.");
+                        if(!currentUserData.active && currentUserData.role !== 'gameMaster') {
+                            showLoginError("❌ This account has been disabled. Contact the Game Master.");
                             await auth.signOut();
                             return;
                         }
 
                         hideLoginError();
-                        if (currentUserData.role === 'admin') {
-                            console.log("[Scoutopoly] Opening admin dashboard");
+                        
+                        // Strict Role Check
+                        if (currentUserData.role === 'gameMaster') {
+                            console.log("[Scoutopoly] Opening Game Master control panel");
                             initAdminDashboard();
-                        } else {
+                        } else if (currentUserData.role === 'player') {
                             console.log("[Scoutopoly] Opening member dashboard");
+                            initMemberDashboard(user.uid);
+                        } else {
+                            // Fallback if role value is old/invalid
+                            await updateDoc(userDocRef, { role: "player" });
+                            currentUserData.role = "player";
                             initMemberDashboard(user.uid);
                         }
                     } else {
-                        console.error("[Scoutopoly] Firestore profile lookup failed");
-                        if (user.email === 'chef@scoutopoly.local') {
-                            await setupInitialAdmin(user.uid);
-                            console.log("[Scoutopoly] Opening admin dashboard");
-                            initAdminDashboard();
-                        } else {
-                            showLoginError("❌ Your account profile has not been configured. Contact the administrator.");
-                            await auth.signOut();
-                        }
+                        showLoginError("❌ Your account profile has not been configured. Contact the Game Master.");
+                        await auth.signOut();
                     }
                 } catch (error) {
                     console.error("[Scoutopoly] Permission denied", error);
@@ -681,21 +718,6 @@
                 switchView('view-login');
             }
         });
-
-        async function setupInitialAdmin(uid) {
-            await setDoc(doc(db, "users", uid), {
-                username: "chef", displayName: "Chief Administrator", role: "admin",
-                patrol: "HQ", scoutRank: "Leader", active: true, createdAt: serverTimestamp()
-            });
-            await setDoc(doc(db, "usernames", "chef"), {
-                username: "chef", email: "chef@scoutopoly.local", uid: uid
-            });
-            await setDoc(doc(db, "players", uid), {
-                gamesPlayed: 0, gamesWon: 0, gamesLost: 0, totalScore: 0, moneyEarned: 0, propertiesOwned: 0, achievements: 0
-            });
-            currentUserData = { id: uid, username: "chef", role: "admin", displayName: "Chief Administrator", active: true };
-            await logActivity("System Initialized. Chef Admin created.", "system");
-        }
 
         // =========================================================
         // LOGIN FORM SUBMISSION HANDLER
@@ -746,8 +768,17 @@
                     if (usernameInput === 'chef' && passwordInput === 'ch@f123') {
                         try {
                             const cred = await createUserWithEmailAndPassword(auth, 'chef@scoutopoly.local', 'ch@f123');
-                            await setupInitialAdmin(cred.user.uid);
-                            console.log("[Scoutopoly] Authentication successful");
+                            await setDoc(doc(db, "users", cred.user.uid), {
+                                username: "chef", displayName: "Chief Administrator", role: "gameMaster",
+                                patrol: "HQ", scoutRank: "CP", active: true, createdAt: serverTimestamp()
+                            });
+                            await setDoc(doc(db, "usernames", "chef"), {
+                                username: "chef", email: "chef@scoutopoly.local", uid: cred.user.uid
+                            });
+                            await setDoc(doc(db, "players", cred.user.uid), {
+                                gamesPlayed: 0, gamesWon: 0, gamesLost: 0, totalScore: 0, moneyEarned: 0, propertiesOwned: 0, achievements: 0
+                            });
+                            console.log("[Scoutopoly] Chef authentication & bootstrap successful");
                             return;
                         } catch (bootstrapErr) {
                             throw authErr;
@@ -760,9 +791,7 @@
             } catch (error) {
                 console.error("[Scoutopoly] Firebase authentication failed", error);
                 let errMsg = "❌ Incorrect username or password";
-                if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
-                    errMsg = "❌ Incorrect username or password";
-                } else if (error.code === 'auth/user-not-found') {
+                if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found') {
                     errMsg = "❌ Incorrect username or password";
                 } else if (error.code === 'permission-denied') {
                     errMsg = "❌ Permission denied during login verification.";
@@ -781,12 +810,12 @@
         });
         document.getElementById('tab-admin').addEventListener('click', (e) => {
             e.target.classList.add('active'); document.getElementById('tab-member').classList.remove('active');
-            document.getElementById('login-heading').innerText = "Admin Login"; document.getElementById('login-btn').className = "btn btn-cyan";
+            document.getElementById('login-heading').innerText = "Game Master Login"; document.getElementById('login-btn').className = "btn btn-cyan";
             hideLoginError();
         });
 
         // =========================================================
-        // ADMIN DASHBOARD
+        // ADMIN DASHBOARD (GAME MASTER CONTROL PANEL)
         // =========================================================
         async function initAdminDashboard() {
             switchView('view-admin');
@@ -813,8 +842,6 @@
             document.getElementById('stat-active-users').innerText = members.filter(m => m.active).length;
             document.getElementById('stat-active-games').innerText = Math.floor(Math.random() * 3) + 1;
             document.getElementById('stat-gms').innerText = members.filter(m => m.role === 'gameMaster').length;
-            document.getElementById('stat-mods').innerText = members.filter(m => m.role === 'gameModerator').length;
-            document.getElementById('stat-admins').innerText = members.filter(m => m.role === 'admin').length;
         }
 
         function renderMembersTable(members) {
@@ -835,14 +862,14 @@
                     <td data-label="Username">@${m.username}</td>
                     <td data-label="Role"><span class="badge ${roleUI.class}">${roleUI.label}</span></td>
                     <td data-label="Patrol">${m.patrol || '-'}</td>
-                    <td data-label="Rank">${m.scoutRank || '-'}</td>
+                    <td data-label="Scout Rank">${m.scoutRank || 'MEMBER'}</td>
                     <td data-label="Status"><strong class="${statusClass}">${statusText}</strong></td>
                     <td data-label="Actions">
                         <div class="action-menu">
                             <button class="action-btn">⋮</button>
                             <div class="action-content">
                                 <a onclick="app.viewPlayer('${m.id}')">👁 View Profile</a>
-                                <a onclick="app.openRoleModal('${m.id}', '${m.username}', '${m.role}')">🔄 Change Role</a>
+                                <a onclick="app.openEditMemberModal('${m.id}')">✏️ Edit Member</a>
                                 ${m.id !== currentUserData.id ? `
                                     <a onclick="app.confirmAction('disable', '${m.id}', ${m.active})">${m.active ? '🚫 Disable Account' : '✅ Enable Account'}</a>
                                     <a class="text-danger" onclick="app.confirmAction('delete', '${m.id}')">🗑 Delete Account</a>
@@ -902,11 +929,11 @@
                 
                 const role = document.getElementById('new-role').value;
                 const name = document.getElementById('new-name').value.trim();
+                const patrol = document.getElementById('new-patrol').value.trim();
+                const scoutRank = document.getElementById('new-rank').value;
                 
                 await setDoc(doc(db, "users", cred.user.uid), {
-                    username, displayName: name, role,
-                    patrol: document.getElementById('new-patrol').value.trim(),
-                    scoutRank: document.getElementById('new-rank').value,
+                    username, displayName: name, role, patrol, scoutRank,
                     nickname: document.getElementById('new-nickname').value.trim(),
                     profileImage: document.getElementById('new-pic').value.trim(),
                     description: document.getElementById('new-desc').value.trim(),
@@ -923,7 +950,7 @@
 
                 await secondaryAuth.signOut();
                 showToast(`✅ Member account created successfully!`);
-                await logActivity(`${currentUserData.displayName || currentUserData.username} created a new account for ${name} (${roleDisplay[role].label})`);
+                await logActivity(`${currentUserData.displayName || currentUserData.username} created account for ${name} (${roleDisplay[role].label})`);
                 
                 app.closeModal('create-member-modal');
                 document.getElementById('create-member-form').reset();
@@ -933,19 +960,27 @@
             } finally { btn.disabled = false; btn.innerText = "CREATE ACCOUNT"; }
         });
 
-        document.getElementById('edit-role-form').addEventListener('submit', async (e) => {
+        document.getElementById('edit-member-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const uid = document.getElementById('er-uid').value;
-            const newRole = document.getElementById('er-role').value;
-            const username = document.getElementById('er-username').innerText;
+            const uid = document.getElementById('em-uid').value;
+            const newRole = document.getElementById('em-role').value;
+            const newName = document.getElementById('em-name').value.trim();
+            const newPatrol = document.getElementById('em-patrol').value.trim();
+            const newRank = document.getElementById('em-rank').value;
             
             try {
-                await updateDoc(doc(db, "users", uid), { role: newRole, updatedAt: serverTimestamp() });
-                showToast("✅ Player role updated successfully.");
-                await logActivity(`${currentUserData.displayName || currentUserData.username} changed ${username}'s role to ${roleDisplay[newRole].label}`);
-                app.closeModal('edit-role-modal');
+                await updateDoc(doc(db, "users", uid), {
+                    displayName: newName,
+                    patrol: newPatrol,
+                    scoutRank: newRank,
+                    role: newRole,
+                    updatedAt: serverTimestamp()
+                });
+                showToast("✅ Member profile updated successfully.");
+                await logActivity(`${currentUserData.displayName || currentUserData.username} updated ${newName}'s member profile.`);
+                app.closeModal('edit-member-modal');
                 loadMembers();
-            } catch (e) { showToast("Failed to update role.", "error"); }
+            } catch (e) { showToast("Failed to update profile.", "error"); }
         });
 
         // =========================================================
@@ -959,7 +994,7 @@
             document.getElementById('player-display-name').innerText = currentUserData.displayName || currentUserData.username;
             document.getElementById('player-role-badge').innerHTML = `<span class="badge ${rUI.class}" style="font-size:1rem; padding:8px 15px;">${rUI.label}</span>`;
             document.getElementById('player-patrol').innerText = currentUserData.patrol || '-';
-            document.getElementById('player-rank').innerText = currentUserData.scoutRank || '-';
+            document.getElementById('player-rank').innerText = currentUserData.scoutRank || 'MEMBER';
             document.getElementById('player-avatar-init').innerText = (currentUserData.displayName || currentUserData.username).charAt(0).toUpperCase();
 
             try {
@@ -978,28 +1013,14 @@
             const panelContainer = document.getElementById('role-specific-panels');
             panelContainer.innerHTML = '';
             
-            if (rolePermissions[r].manageGame && r !== 'admin') {
+            if (currentUserData.role === 'gameMaster') {
                 panelContainer.innerHTML += `
                     <div class="role-panel role-panel-gm">
-                        <h3>👑 GAME MASTER PANEL</h3>
-                        <p style="color:rgba(255,255,255,0.7); margin-bottom:15px;">Manage game rooms, start rounds, and configure settings.</p>
+                        <h3>👑 GAME MASTER CONTROLS</h3>
+                        <p style="color:rgba(255,255,255,0.7); margin-bottom:15px;">You have full Game Master permissions. Access the Admin Control Panel to manage members, games, and moderation.</p>
                         <div class="role-actions">
-                            <button class="btn btn-cyan" onclick="app.showComingSoon('Create Game Room')">Create Room</button>
-                            <button class="btn btn-outline" onclick="app.showComingSoon('Manage Settings')">Game Settings</button>
-                            <button class="btn btn-outline" onclick="app.showComingSoon('View Players')">View Active Players</button>
-                        </div>
-                    </div>
-                `;
-            }
-            if (rolePermissions[r].moderateGame && r !== 'admin') {
-                panelContainer.innerHTML += `
-                    <div class="role-panel role-panel-mod">
-                        <h3>🛡️ MODERATION PANEL</h3>
-                        <p style="color:rgba(255,255,255,0.7); margin-bottom:15px;">Monitor active games, handle reports, and enforce rules.</p>
-                        <div class="role-actions">
-                            <button class="btn btn-outline" style="color:var(--accent-blue); border-color:var(--accent-blue);" onclick="app.showComingSoon('Monitor Games')">Monitor Games</button>
-                            <button class="btn btn-outline" onclick="app.showComingSoon('Player Reports')">View Reports</button>
-                            <button class="btn btn-danger" onclick="app.showComingSoon('Kick Player')">Kick/Remove Player</button>
+                            <button class="btn btn-cyan" onclick="initAdminDashboard()">Open Admin Control Panel</button>
+                            <button class="btn btn-gold" onclick="app.showComingSoon('Game Room')">Play Scoutopoly</button>
                         </div>
                     </div>
                 `;
@@ -1011,6 +1032,7 @@
             openModal: (id) => { document.getElementById(id).classList.add('active'); },
             closeModal: (id) => { document.getElementById(id).classList.remove('active'); },
             showComingSoon: (feat) => { showToast(`${feat} feature coming soon!`, "success"); },
+            enterGameAsGM: () => { app.showComingSoon('Scoutopoly Game Board'); },
             
             viewPlayer: async (uid) => {
                 const m = allMembersData.find(x => x.id === uid);
@@ -1020,7 +1042,7 @@
                 document.getElementById('vp-username').innerText = `@${m.username}`;
                 document.getElementById('vp-role').innerHTML = `<span class="badge ${rUI.class}">${rUI.label}</span>`;
                 document.getElementById('vp-patrol').innerText = m.patrol || '-';
-                document.getElementById('vp-rank').innerText = m.scoutRank || '-';
+                document.getElementById('vp-rank').innerText = m.scoutRank || 'MEMBER';
                 document.getElementById('vp-status').innerText = m.active ? 'Active' : 'Disabled';
                 document.getElementById('vp-status').className = m.active ? 'status-active' : 'status-disabled';
                 document.getElementById('vp-joined').innerText = m.createdAt ? new Date(m.createdAt.toDate()).toLocaleDateString() : '-';
@@ -1040,11 +1062,15 @@
                 app.openModal('view-profile-modal');
             },
             
-            openRoleModal: (uid, username, currentRole) => {
-                document.getElementById('er-uid').value = uid;
-                document.getElementById('er-username').innerText = `@${username}`;
-                document.getElementById('er-role').value = currentRole;
-                app.openModal('edit-role-modal');
+            openEditMemberModal: (uid) => {
+                const m = allMembersData.find(x => x.id === uid);
+                if(!m) return;
+                document.getElementById('em-uid').value = m.id;
+                document.getElementById('em-name').value = m.displayName || m.username;
+                document.getElementById('em-patrol').value = m.patrol || '';
+                document.getElementById('em-rank').value = m.scoutRank || 'MEMBER';
+                document.getElementById('em-role').value = m.role || 'player';
+                app.openModal('edit-member-modal');
             },
 
             confirmAction: (action, uid, isActive = true) => {
