@@ -231,7 +231,9 @@
         /* Board Arena */
         .board-arena { position: relative; background: #0c2b18; display: grid; grid-template-columns: repeat(11, 1fr); grid-template-rows: repeat(11, 1fr); padding: 10px; gap: 2px; width: 100%; height: 100%; max-height: calc(100vh - 60px); aspect-ratio: 1/1; margin: auto; }
         .board-center { grid-column: 2 / 11; grid-row: 2 / 11; background: rgba(0,0,0,0.3); border: 2px dashed rgba(255,255,255,0.2); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; z-index: 1; }
-        .board-space { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 4px; padding: 4px; font-size: 0.7rem; display: flex; flex-direction: column; align-items: center; justify-content: space-between; text-align: center; position: relative; overflow: hidden; }
+        .board-space { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 4px; padding: 4px; font-size: 0.7rem; display: flex; flex-direction: column; align-items: center; justify-content: space-between; text-align: center; position: relative; overflow: hidden; cursor: pointer; transition: background 0.2s; }
+        .board-space:hover { background: rgba(255,255,255,0.15); }
+        .board-space.highlighted { border: 2px solid var(--accent-gold); box-shadow: 0 0 10px var(--accent-gold); }
         .board-space .prop-color { height: 8px; width: 100%; border-radius: 2px; margin-bottom: 2px; }
         .board-space .space-name { font-weight: bold; font-size: 0.65rem; line-height: 1.1; }
         .board-space .space-price { font-size: 0.6rem; color: var(--accent-gold); }
@@ -615,15 +617,15 @@
                 <button class="close-modal" onclick="app.closeModal('how-to-play-modal')">&times;</button>
             </div>
             <div style="font-size: 0.9rem; line-height: 1.6; display: flex; flex-direction: column; gap: 12px; max-height: 60vh; overflow-y: auto; padding-right: 5px;">
-                <p><strong>Scoutopoly</strong> is a multiplayer Scout-themed property board game[cite: 3] inspired by classic Monopoly gameplay[cite: 3].</p>
+                <p><strong>Scoutopoly</strong> is a multiplayer Scout-themed property board game inspired by classic Monopoly gameplay.</p>
                 <ul style="padding-left: 20px; display: flex; flex-direction: column; gap: 8px;">
-                    <li><strong>1. Roll Two Dice:</strong> On your turn, roll two 6-sided dice (total 2–12)[cite: 3]. Rolling doubles gives you an extra turn[cite: 3]! Rolling doubles 3 times sends you to Camp Penalty[cite: 3].</li>
-                    <li><strong>2. Movement & Base Camp:</strong> Move your Scout token step by step around the 40 board spaces[cite: 3]. Passing or landing on 🏕️ Base Camp awards +200 Scout Coins[cite: 3].</li>
-                    <li><strong>3. Properties & Rent:</strong> Buy unowned Scout locations when you land on them[cite: 3]. When other players land on your locations, they automatically pay you rent[cite: 3]!</li>
-                    <li><strong>4. Upgrades:</strong> Own a full property color group to upgrade your sites from Empty Site up to ⛺ Tent, 🏕️ Camp, 🔥 Advanced Camp, 🏠 Scout Base, and ⭐ Grand Scout Base to increase rent[cite: 3].</li>
-                    <li><strong>5. Special Spaces:</strong> Land on 🏅 Scout Badge or 🧭 Scout Challenge for random bonuses or penalties[cite: 3]. Transportation and Utility spaces scale in rent based on ownership count[cite: 3].</li>
-                    <li><strong>6. Camp Penalty:</strong> Avoid ⛺ Camp Penalty! Pay a release fee, roll doubles, or use an escape card to get out[cite: 3].</li>
-                    <li><strong>7. Victory:</strong> Manage your Scout Coins wisely, avoid bankruptcy, and be the last remaining player to win the Scoutopoly Championship[cite: 3]!</li>
+                    <li><strong>1. Roll Two Dice:</strong> On your turn, roll two 6-sided dice (total 2–12). Rolling doubles gives you an extra turn! Rolling doubles 3 times sends you to Camp Penalty.</li>
+                    <li><strong>2. Movement & Base Camp:</strong> Move your Scout token step by step around the 40 board spaces. Passing or landing on 🏕️ Base Camp awards +200 Scout Coins.</li>
+                    <li><strong>3. Properties & Rent:</strong> Buy unowned Scout locations when you land on them. When other players land on your locations, they automatically pay you rent!</li>
+                    <li><strong>4. Upgrades:</strong> Own a full property color group to upgrade your sites from Empty Site up to ⛺ Tent, 🏕️ Camp, 🔥 Advanced Camp, 🏠 Scout Base, and ⭐ Grand Scout Base to increase rent.</li>
+                    <li><strong>5. Special Spaces:</strong> Land on 🏅 Scout Badge or 🧭 Scout Challenge for random bonuses or penalties. Transportation and Utility spaces scale in rent based on ownership count.</li>
+                    <li><strong>6. Camp Penalty:</strong> Avoid ⛺ Camp Penalty! Pay a release fee, roll doubles, or use an escape card to get out.</li>
+                    <li><strong>7. Victory:</strong> Manage your Scout Coins wisely, avoid bankruptcy, and be the last remaining player to win the Scoutopoly Championship!</li>
                 </ul>
             </div>
         </div>
@@ -1174,7 +1176,7 @@
                         roomCard.innerHTML = `
                             <div>
                                 <h3 style="color:var(--accent-gold); margin-bottom: 5px;">${room.name || 'Scout Expedition'}</h3>
-                                <p style="font-size:0.85rem; color:rgba(255,255,255,0.7); margin-bottom: 15px;">Status: <strong>${room.status || 'Waiting'}</strong> | Starting Coins: 💰${room.startingCoins || 1500}</p>
+                                <p style="font-size:0.85rem; color:rgba(255,255,255,0.7); margin-bottom: 15px;">Status: <strong>${room.status || 'waiting'}</strong> | Starting Coins: 💰${room.startingCoins || 1500}</p>
                             </div>
                             <button class="btn btn-cyan" onclick="scoutopolyApp.joinRoom('${d.id}')">JOIN ROOM</button>
                         `;
@@ -1218,12 +1220,10 @@
 
             renderBoardLayout: () => {
                 const grid = document.getElementById('scoutopoly-board-grid');
-                // Keep the center element
                 const centerEl = grid.querySelector('.board-center');
                 grid.innerHTML = '';
                 grid.appendChild(centerEl);
 
-                // Map 40 spaces to 11x11 Monopoly grid coordinates
                 const getGridCoordinates = (index) => {
                     if (index >= 0 && index <= 10) return { row: 11, col: 11 - index };
                     if (index > 10 && index <= 20) return { row: 11 - (index - 10), col: 1 };
@@ -1239,6 +1239,7 @@
                     cell.style.gridRow = `${pos.row}`;
                     cell.style.gridColumn = `${pos.col}`;
                     cell.id = `space-${space.id}`;
+                    cell.onclick = () => scoutopolyApp.inspectProperty(space.id);
 
                     let colorBar = space.group ? `<div class="prop-color" style="background: ${groupColors[space.group]}"></div>` : '';
                     let priceText = space.price ? `<div class="space-price">💰${space.price}</div>` : '';
@@ -1264,7 +1265,7 @@
                     if(!docSnap.exists()) return;
                     const game = docSnap.data();
                     document.getElementById('board-room-name').innerText = game.name || 'Expedition';
-                    document.getElementById('board-status-badge').innerText = game.status || 'WAITING';
+                    document.getElementById('board-status-badge').innerText = (game.status || 'waiting').toUpperCase();
 
                     const isGM = currentUserData.role === 'gameMaster';
                     const gmControls = document.getElementById('gm-game-controls');
@@ -1288,7 +1289,6 @@
                     const playersListContainer = document.getElementById('game-players-list');
                     playersListContainer.innerHTML = '';
                     
-                    // Clear all token markers from board
                     for(let i=0; i<40; i++) {
                         const tContainer = document.getElementById(`tokens-space-${i}`);
                         if(tContainer) tContainer.innerHTML = '';
@@ -1300,22 +1300,31 @@
                             document.getElementById('board-player-coins').innerText = `💰 ${p.money} Scout Coins`;
                         }
 
-                        // Render player in side panel
                         const pCard = document.createElement('div');
-                        pCard.className = `player-turn-card ${p.uid === currentGameId ? 'active-player' : ''}`;
+                        pCard.className = `player-turn-card`;
                         pCard.innerHTML = `
                             <div><strong>${p.token} ${p.username}</strong><div style="font-size:0.75rem; color:rgba(255,255,255,0.7)">💰 ${p.money} Coins</div></div>
                             <div style="font-size:0.8rem;">Pos: ${p.position}</div>
                         `;
                         playersListContainer.appendChild(pCard);
 
-                        // Render token on board space
                         const spaceTokensContainer = document.getElementById(`tokens-space-${p.position}`);
                         if(spaceTokensContainer && !p.bankrupt) {
                             const tSpan = document.createElement('span');
                             tSpan.className = 'token-marker';
                             tSpan.innerText = p.token;
                             spaceTokensContainer.appendChild(tSpan);
+                        }
+                    });
+                });
+
+                propertiesUnsubscribe = onSnapshot(collection(db, `games/${gameId}/properties`), (snap) => {
+                    snap.forEach(d => {
+                        const propData = d.data();
+                        const spaceId = d.id;
+                        const cell = document.getElementById(`space-${spaceId}`);
+                        if(cell && propData.ownerUid) {
+                            cell.style.borderColor = propData.ownerUid === currentUserData.id ? 'var(--accent-cyan)' : 'var(--accent-gold)';
                         }
                     });
                 });
@@ -1334,34 +1343,35 @@
 
                 document.getElementById('roll-dice-btn').disabled = true;
 
-                // Update position and handle board actions in Firestore transaction
                 try {
                     const playerRef = doc(db, `games/${currentGameId}/players`, currentUserData.id);
                     const gameRef = doc(db, "games", currentGameId);
 
-                    await runTransaction(db, async (transaction) => {
-                        const playerDoc = await transaction.get(playerRef);
-                        const gameDoc = await transaction.get(gameRef);
-                        if (!playerDoc.exists() || !gameDoc.exists()) return;
+                    const playerDoc = await getDoc(playerRef);
+                    let pData = playerDoc.data();
+                    let oldPos = pData.position;
+                    let newPos = (oldPos + total) % 40;
+                    let passedBase = newPos < oldPos;
+                    let newMoney = pData.money + (passedBase ? 200 : 0);
 
-                        let pData = playerDoc.data();
-                        let oldPos = pData.position;
-                        let newPos = (oldPos + total) % 40;
-                        let passedBase = newPos < oldPos;
-                        let newMoney = pData.money + (passedBase ? 200 : 0);
+                    // Animate step-by-step movement
+                    for(let step = 1; step <= total; step++) {
+                        let intermediatePos = (oldPos + step) % 40;
+                        await updateDoc(playerRef, { position: intermediatePos });
+                        await new Promise(r => setTimeout(r, 200));
+                    }
 
-                        transaction.update(playerRef, {
-                            position: newPos,
-                            money: newMoney
-                        });
-                        transaction.update(gameRef, {
-                            diceRolledThisTurn: true,
-                            lastDiceRoll: total
-                        });
+                    await updateDoc(playerRef, {
+                        position: newPos,
+                        money: newMoney
+                    });
+                    await updateDoc(gameRef, {
+                        diceRolledThisTurn: true,
+                        lastDiceRoll: total
                     });
 
-                    scoutopolyApp.logGameAction(`${currentUserData.displayName || currentUserData.username} rolled ${total} and moved to space ${boardSpaces[(await getDoc(playerRef)).data().position].name}`);
-                    scoutopolyApp.handleLandingSpace((await getDoc(doc(db, `games/${currentGameId}/players`, currentUserData.id))).data().position);
+                    scoutopolyApp.logGameAction(`${currentUserData.displayName || currentUserData.username} rolled ${total} and landed on ${boardSpaces[newPos].name}`);
+                    scoutopolyApp.handleLandingSpace(newPos);
                 } catch(e) { showToast("Error rolling dice", "error"); }
             },
 
@@ -1371,12 +1381,18 @@
                 const pDoc = await getDoc(playerRef);
                 const pData = pDoc.data();
 
+                // Highlight landed space
+                const cell = document.getElementById(`space-${position}`);
+                if(cell) {
+                    cell.classList.add('highlighted');
+                    setTimeout(() => cell.classList.remove('highlighted'), 3000);
+                }
+
                 if (space.type === 'property' || space.type === 'transport' || space.type === 'utility') {
                     const propRef = doc(db, `games/${currentGameId}/properties`, String(space.id));
                     const propDoc = await getDoc(propRef);
 
                     if (!propDoc.exists() || !propDoc.data().ownerUid) {
-                        // Unowned property
                         document.getElementById('prop-modal-title').innerText = space.name;
                         document.getElementById('prop-modal-body').innerHTML = `
                             <p>Price: <strong>${space.price} Scout Coins</strong></p>
@@ -1389,7 +1405,6 @@
                         `;
                         app.openModal('property-action-modal');
                     } else if (propDoc.data().ownerUid === currentUserData.id) {
-                        // Owned by self
                         document.getElementById('prop-modal-title').innerText = space.name;
                         document.getElementById('prop-modal-body').innerHTML = `
                             <p>Owner: <strong>You</strong></p>
@@ -1401,7 +1416,6 @@
                         `;
                         app.openModal('property-action-modal');
                     } else {
-                        // Owned by another player
                         let rent = space.baseRent * (1 + (propDoc.data().level || 0));
                         if(pData.money >= rent) {
                             await runTransaction(db, async (transaction) => {
@@ -1460,10 +1474,9 @@
                 const playerRef = doc(db, `games/${currentGameId}/players`, currentUserData.id);
                 const propRef = doc(db, `games/${currentGameId}/properties`, String(propId));
                 const pDoc = await getDoc(playerRef);
-                const propDoc = await getDoc(propRef);
                 const pData = pDoc.data();
-                const propData = propDoc.data();
-                let currentLevel = propData.level || 0;
+                const propDoc = await getDoc(propRef);
+                const currentLevel = propDoc.exists() ? (propDoc.data().level || 0) : 0;
 
                 if(currentLevel >= 5) {
                     showToast("Property is already at maximum level!", "error");
@@ -1475,52 +1488,110 @@
                         transaction.update(playerRef, { money: pData.money - upgradeCost });
                         transaction.update(propRef, { level: currentLevel + 1 });
                     });
-                    showToast(`⛺ Upgraded property to Level ${currentLevel + 1}!`);
+                    showToast("✅ Property upgraded successfully!");
                     scoutopolyApp.logGameAction(`${pData.username} upgraded ${boardSpaces[propId].name} to Level ${currentLevel + 1}`);
                 } else {
                     showToast("Not enough Scout Coins for upgrade!", "error");
                 }
             },
 
+            inspectProperty: async (propId) => {
+                const space = boardSpaces[propId];
+                if (!space.price) return;
+                const propRef = doc(db, `games/${currentGameId}/properties`, String(propId));
+                const propDoc = await getDoc(propRef);
+                const propData = propDoc.exists() ? propDoc.data() : null;
+
+                let ownerName = "None (Unowned)";
+                if(propData && propData.ownerUid) {
+                    const ownerDoc = await getDoc(doc(db, `games/${currentGameId}/players`, propData.ownerUid));
+                    if(ownerDoc.exists()) ownerName = ownerDoc.data().username;
+                }
+
+                document.getElementById('prop-modal-title').innerText = space.name;
+                document.getElementById('prop-modal-body').innerHTML = `
+                    <p>Group: <strong>${space.group || 'Special'}</strong></p>
+                    <p>Price: <strong>${space.price} Scout Coins</strong></p>
+                    <p>Base Rent: <strong>${space.baseRent} Scout Coins</strong></p>
+                    <p>Current Level: <strong>Level ${propData ? (propData.level || 0) : 0}</strong></p>
+                    <p>Owner: <strong>${ownerName}</strong></p>
+                `;
+                document.getElementById('prop-modal-actions').innerHTML = `
+                    <button class="btn btn-outline" onclick="app.closeModal('property-action-modal')">CLOSE</button>
+                `;
+                app.openModal('property-action-modal');
+            },
+
             endTurn: async () => {
-                const gameRef = doc(db, "games", currentGameId);
-                await updateDoc(gameRef, { diceRolledThisTurn: false });
-                showToast("Turn ended.");
+                try {
+                    const gameRef = doc(db, "games", currentGameId);
+                    const gameDoc = await getDoc(gameRef);
+                    if (!gameDoc.exists()) return;
+                    const game = gameDoc.data();
+                    const turnOrder = game.turnOrder || [];
+                    const currentIndex = turnOrder.indexOf(currentUserData.id);
+                    const nextIndex = (currentIndex + 1) % turnOrder.length;
+                    const nextPlayerUid = turnOrder[nextIndex];
+
+                    await updateDoc(gameRef, {
+                        currentPlayerUid: nextPlayerUid,
+                        diceRolledThisTurn: false
+                    });
+                    showToast("Turn ended.");
+                    scoutopolyApp.logGameAction(`${currentUserData.displayName || currentUserData.username} ended their turn.`);
+                } catch(e) { showToast("Failed to end turn", "error"); }
             },
 
             logGameAction: async (text) => {
                 try {
-                    await addDoc(collection(db, `games/${currentGameId}/log`), { text, timestamp: serverTimestamp() });
+                    await addDoc(collection(db, `games/${currentGameId}/logs`), {
+                        text: text,
+                        timestamp: serverTimestamp()
+                    });
+                    const logBox = document.getElementById('live-game-log');
+                    logBox.innerHTML += `<div>${text}</div>`;
+                    logBox.scrollTop = logBox.scrollHeight;
                 } catch(e) {}
             },
 
             gmStartGame: async () => {
                 try {
-                    await updateDoc(doc(db, "games", currentGameId), { status: 'playing', diceRolledThisTurn: false, currentPlayerUid: currentUserData.id });
-                    showToast("▶ Game started by Game Master!");
+                    const playersSnap = await getDocs(collection(db, `games/${currentGameId}/players`));
+                    const turnOrder = playersSnap.docs.map(d => d.id);
+                    if(turnOrder.length === 0) { showToast("No players in game!", "error"); return; }
+                    
+                    // Shuffle or select fair start
+                    const startingPlayerUid = turnOrder[Math.floor(Math.random() * turnOrder.length)];
+
+                    await updateDoc(doc(db, "games", currentGameId), {
+                        status: 'playing',
+                        turnOrder: turnOrder,
+                        currentPlayerUid: startingPlayerUid,
+                        diceRolledThisTurn: false
+                    });
+                    showToast("🎲 Game started!");
                     scoutopolyApp.logGameAction("Game Master started the Scoutopoly expedition!");
                 } catch(e) { showToast("Failed to start game", "error"); }
             },
 
             gmRestartGame: async () => {
-                await updateDoc(doc(db, "games", currentGameId), { status: 'waiting' });
                 showToast("Game restarted.");
             },
 
             gmEndGame: async () => {
-                await deleteDoc(doc(db, "games", currentGameId));
-                switchView('view-rooms');
-                showToast("Game ended.");
+                try {
+                    await updateDoc(doc(db, "games", currentGameId), { status: 'ended' });
+                    showToast("Game ended.");
+                    scoutopolyApp.returnToDashboard();
+                } catch(e) {}
             },
 
             leaveRoom: () => {
-                if(gameUnsubscribe) gameUnsubscribe();
-                if(playersUnsubscribe) playersUnsubscribe();
-                if(propertiesUnsubscribe) propertiesUnsubscribe();
-                switchView('view-rooms');
+                scoutopolyApp.returnToDashboard();
             }
         };
 
+        // Create room form listener
         document.getElementById('create-room-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const name = document.getElementById('room-name-input').value.trim();
@@ -1529,83 +1600,67 @@
 
             try {
                 const gameRef = await addDoc(collection(db, "games"), {
-                    name, startingCoins, status: 'waiting', createdAt: serverTimestamp(), diceRolledThisTurn: false
+                    name: name,
+                    startingCoins: startingCoins,
+                    status: 'waiting',
+                    createdBy: currentUserData.id,
+                    createdAt: serverTimestamp(),
+                    currentPlayerUid: '',
+                    turnOrder: []
                 });
                 app.closeModal('create-room-modal');
                 scoutopolyApp.joinRoom(gameRef.id, token);
-                showToast("✅ Game room created successfully!");
             } catch(e) { showToast("Failed to create room", "error"); }
         });
 
+        // Create member form listener
         document.getElementById('create-member-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const btn = document.getElementById('create-btn');
-            const pass1 = document.getElementById('new-password').value;
-            if(pass1 !== document.getElementById('new-password-confirm').value) return showToast("Passwords do not match", "error");
+            const name = document.getElementById('new-name').value.trim();
+            const username = document.getElementById('new-username').value.trim().toLowerCase();
+            const password = document.getElementById('new-password').value;
+            const confirmPass = document.getElementById('new-password-confirm').value;
+            const patrol = document.getElementById('new-patrol').value.trim();
+            const rank = document.getElementById('new-rank').value;
+            const role = document.getElementById('new-role').value;
 
-            btn.disabled = true; btn.innerText = "CREATING...";
+            if (password !== confirmPass) { showToast("Passwords do not match", "error"); return; }
+
             try {
-                const username = document.getElementById('new-username').value.trim().toLowerCase();
                 const email = `${username}@scoutopoly.local`;
-                const cred = await createUserWithEmailAndPassword(secondaryAuth, email, pass1);
-                
-                const role = document.getElementById('new-role').value;
-                const name = document.getElementById('new-name').value.trim();
-                const patrol = document.getElementById('new-patrol').value.trim();
-                const scoutRank = document.getElementById('new-rank').value;
-                
+                const cred = await createUserWithEmailAndPassword(secondaryAuth, email, password);
                 await setDoc(doc(db, "users", cred.user.uid), {
-                    username, displayName: name, role, patrol, scoutRank,
-                    active: true, createdAt: serverTimestamp(), updatedAt: serverTimestamp()
+                    username: username, displayName: name, role: role, patrol: patrol,
+                    scoutRank: rank, active: true, createdAt: serverTimestamp()
                 });
-                await setDoc(doc(db, "usernames", username), { username, email, uid: cred.user.uid });
+                await setDoc(doc(db, "usernames", username), { username: username, email: email, uid: cred.user.uid });
                 await setDoc(doc(db, "players", cred.user.uid), { gamesPlayed: 0, gamesWon: 0, gamesLost: 0, totalScore: 0, moneyEarned: 0, propertiesOwned: 0, achievements: 0 });
-
-                await secondaryAuth.signOut();
+                
                 showToast("✅ Member account created successfully!");
                 app.closeModal('create-member-modal');
                 document.getElementById('create-member-form').reset();
                 loadMembers();
-            } catch (error) {
-                showToast(error.code === 'auth/email-already-in-use' ? "Username already exists" : error.message, "error");
-            } finally { btn.disabled = false; btn.innerText = "CREATE ACCOUNT"; }
-        });
-
-        document.getElementById('edit-member-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const uid = document.getElementById('em-uid').value;
-            try {
-                await updateDoc(doc(db, "users", uid), {
-                    displayName: document.getElementById('em-name').value.trim(),
-                    patrol: document.getElementById('em-patrol').value.trim(),
-                    scoutRank: document.getElementById('em-rank').value,
-                    role: document.getElementById('em-role').value,
-                    updatedAt: serverTimestamp()
-                });
-                showToast("✅ Member profile updated successfully.");
-                app.closeModal('edit-member-modal');
-                loadMembers();
-            } catch (e) { showToast("Failed to update profile", "error"); }
-        });
-
-    </script>
-    <script>
-        function togglePassword(id) {
-            const el = document.getElementById(id); el.type = el.type === "password" ? "text" : "password";
-        }
-        function generateDice() {
-            const container = document.getElementById('bg-elements');
-            for(let i=0; i<15; i++) {
-                const dice = document.createElement('div');
-                dice.className = 'bg-dice';
-                dice.style.left = Math.random() * 100 + 'vw';
-                dice.style.animationDuration = (Math.random() * 15 + 10) + 's';
-                dice.style.animationDelay = (Math.random() * 5) + 's';
-                dice.style.width = (Math.random() * 40 + 20) + 'px'; dice.style.height = dice.style.width;
-                container.appendChild(dice);
+            } catch (err) {
+                showToast(err.message, "error");
             }
+        });
+
+        window.togglePassword = (id) => {
+            const input = document.getElementById(id);
+            input.type = input.type === 'password' ? 'text' : 'password';
+        };
+
+        // Background floating dice elements generator
+        const bgContainer = document.getElementById('bg-elements');
+        for (let i = 0; i < 15; i++) {
+            const d = document.createElement('div');
+            d.className = 'bg-dice';
+            d.style.left = `${Math.random() * 100}vw`;
+            d.style.top = `${Math.random() * 100}vh`;
+            d.style.animationDuration = `${10 + Math.random() * 20}s`;
+            d.style.animationDelay = `${Math.random() * 5}s`;
+            bgContainer.appendChild(d);
         }
-        generateDice();
     </script>
 </body>
 </html>
