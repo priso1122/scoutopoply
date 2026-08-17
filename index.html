@@ -1,910 +1,1383 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Scoutopoly | Mobile-First Multiplayer Board Game</title>
+    <title>Scout Night - The Chaos Challenge</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        /* =========================================================
-           CSS VARIABLES & MOBILE-FIRST RESET
-           ========================================================= */
         :root {
-            --primary-dark: #0A1F13;
-            --primary-main: #18452B;
-            --primary-light: #2A6842;
-            --accent-gold: #F4D03F;
-            --accent-cyan: #00E5FF;
-            --accent-purple: #9B59B6;
-            --text-light: #F0F4F1;
-            --text-dark: #0A1F13;
-            --danger: #FF4757;
-            --success: #2ED573;
-            --warning: #FFA502;
-            --font-main: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            --border-radius: 12px;
-            --glass-bg: rgba(255, 255, 255, 0.05);
-            --glass-border: rgba(255, 255, 255, 0.1);
+            --bg-color: #080c16;
+            --surface: #141e30;
+            --surface-light: #24344d;
+            --primary: #f97316;
+            --primary-hover: #ea580c;
+            --secondary: #3b82f6;
+            --secondary-hover: #2563eb;
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
+            --success: #22c55e;
+            --success-hover: #16a34a;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --gold: #fbbf24;
+            --font-en: 'Outfit', sans-serif;
+            --font-ar: 'Cairo', sans-serif;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
 
         body {
-            font-family: var(--font-main);
-            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-main) 100%);
-            color: var(--text-light);
+            background: linear-gradient(135deg, #05080f 0%, #0d1526 100%);
+            color: var(--text-main);
+            font-family: var(--font-en);
             min-height: 100vh;
             overflow-x: hidden;
+        }
+
+        body.ar {
+            font-family: var(--font-ar);
+        }
+
+        /* Star Background Animation */
+        .stars {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle infinite alternate;
+        }
+        @keyframes twinkle {
+            0% { opacity: 0.2; transform: scale(0.8); }
+            100% { opacity: 1; transform: scale(1.2); }
+        }
+
+        /* Scoped Container */
+        .app-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
         }
 
-        .hidden { display: none !important; }
-        .glass-panel {
-            background: var(--glass-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--glass-border);
-            border-radius: var(--border-radius);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        /* Header / Nav */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 20px;
+        }
+        .lang-btn {
+            background: var(--surface-light);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1rem;
         }
 
+        /* Screens */
+        .screen { display: none; flex: 1; flex-direction: column; }
+        .screen.active { display: flex; animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Typography */
+        h1 { font-size: 3rem; font-weight: 900; text-align: center; margin-bottom: 10px; color: var(--primary); text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 4px 15px rgba(249,115,22,0.3); }
+        h2 { font-size: 2rem; font-weight: 800; text-align: center; margin-bottom: 20px; }
+        h3 { font-size: 1.5rem; font-weight: 700; margin-bottom: 15px; }
+        .subtitle { text-align: center; font-size: 1.2rem; color: var(--text-muted); margin-bottom: 40px; font-style: italic; }
+
+        /* Buttons */
         .btn {
-            padding: 12px 20px; border: none; border-radius: 8px; font-weight: 600;
-            cursor: pointer; transition: all 0.2s ease; text-transform: uppercase;
-            letter-spacing: 1px; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-            min-height: 48px; font-size: 0.95rem;
-        }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .btn-gold { background: var(--accent-gold); color: var(--text-dark); box-shadow: 0 4px 15px rgba(244, 208, 63, 0.3); }
-        .btn-cyan { background: var(--accent-cyan); color: var(--text-dark); }
-        .btn-danger { background: var(--danger); color: white; }
-        .btn-outline { background: transparent; color: var(--accent-gold); border: 2px solid var(--accent-gold); }
-
-        input, select, textarea {
-            width: 100%; padding: 14px; background: rgba(0,0,0,0.3);
-            border: 1px solid var(--glass-border); border-radius: 8px;
-            color: white; font-size: 1rem; margin-bottom: 16px; min-height: 48px;
-        }
-        input:focus, select:focus { outline: none; border-color: var(--accent-gold); }
-        option { background: var(--primary-main); color: white; }
-
-        #toast-container { position: fixed; top: 15px; right: 15px; left: 15px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
-        .toast {
-            padding: 14px 20px; border-radius: 8px; background: rgba(10, 31, 19, 0.95); backdrop-filter: blur(10px);
-            border-left: 4px solid var(--accent-cyan); box-shadow: 0 6px 20px rgba(0,0,0,0.4); font-weight: 500; font-size: 0.9rem;
-            pointer-events: auto; animation: slideIn 0.3s ease forwards;
-        }
-        .toast.error { border-left-color: var(--danger); }
-        .toast.success { border-left-color: var(--success); }
-        @keyframes slideIn { from { transform: translateY(-20px); opacity:0;} to {transform: translateY(0); opacity:1;} }
-
-        .view { display: none; width: 100%; flex: 1; flex-direction: column; }
-        .view.active { display: flex; }
-
-        /* Login Screen */
-        #view-login { align-items: center; justify-content: center; padding: 20px; }
-        .login-box { width: 100%; max-width: 400px; padding: 30px; text-align: center; }
-        .logo-title { font-size: 2.2rem; font-weight: 800; color: var(--accent-gold); margin-bottom: 5px; letter-spacing: 2px; }
-        .logo-subtitle { font-size: 0.8rem; color: var(--accent-cyan); margin-bottom: 30px; letter-spacing: 2px; font-weight: 600; }
-        .login-error-box { background: rgba(255, 71, 87, 0.15); border: 1px solid var(--danger); color: #ff8793; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 0.85rem; display: none; }
-
-        /* Navbar */
-        .navbar {
-            display: flex; justify-content: space-between; align-items: center; padding: 12px 20px;
-            background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); border-bottom: 1px solid var(--glass-border);
-            font-size: 0.9rem;
-        }
-        .nav-brand { font-weight: 800; color: var(--accent-gold); display: flex; align-items: center; gap: 10px; }
-
-        /* Dashboard & Lobby */
-        .dashboard-content { padding: 20px; max-width: 800px; margin: 0 auto; width: 100%; }
-        .rooms-grid { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
-        .room-card { padding: 20px; display: flex; justify-content: space-between; align-items: center; gap: 15px; }
-
-        /* Character Selection Grid in Lobby */
-        .character-select-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-            gap: 12px;
-            margin: 20px 0;
-        }
-        .char-card {
-            background: rgba(255,255,255,0.05);
-            border: 2px solid var(--glass-border);
-            border-radius: 10px;
-            padding: 15px 10px;
-            text-align: center;
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            font-weight: 800;
+            border: none;
             cursor: pointer;
             transition: all 0.2s;
-        }
-        .char-card:hover { border-color: var(--accent-cyan); background: rgba(0, 229, 255, 0.05); }
-        .char-card.selected { border-color: var(--accent-gold); background: rgba(244, 208, 63, 0.15); box-shadow: 0 0 15px rgba(244, 208, 63, 0.3); }
-        .char-card.taken { opacity: 0.4; cursor: not-allowed; border-color: var(--danger); }
-        .char-icon { font-size: 2.2rem; margin-bottom: 8px; }
-        .char-name { font-weight: 700; font-size: 0.85rem; margin-bottom: 4px; }
-        .char-status { font-size: 0.7rem; color: var(--accent-cyan); font-weight: 600; }
-
-        /* =========================================================
-           MOBILE-FIRST GAME BOARD LAYOUT
-           ========================================================= */
-        #view-board { padding: 0; height: 100vh; overflow-y: auto; display: flex; flex-direction: column; }
-        .game-header-banner {
-            background: rgba(0,0,0,0.6);
-            padding: 10px 15px;
             text-align: center;
-            border-bottom: 1px solid var(--glass-border);
-        }
-        .turn-banner {
-            font-size: 1.1rem;
-            font-weight: 800;
-            color: var(--accent-gold);
-            padding: 8px;
-            background: rgba(244, 208, 63, 0.1);
-            border-radius: 8px;
-            margin: 8px 15px;
-            text-align: center;
-            border: 1px solid rgba(244, 208, 63, 0.3);
-        }
-        .turn-banner.my-turn { background: rgba(0, 229, 255, 0.15); color: var(--accent-cyan); border-color: var(--accent-cyan); animation: pulseTurn 1.5s infinite; }
-        @keyframes pulseTurn { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }
-
-        /* Board Container optimized for mobile viewport */
-        .board-wrapper {
-            width: 100%;
             display: flex;
             justify-content: center;
-            padding: 10px;
-        }
-        .board-arena {
-            position: relative;
-            background: #0c2b18;
-            display: grid;
-            grid-template-columns: repeat(11, 1fr);
-            grid-template-rows: repeat(11, 1fr);
-            gap: 1px;
-            width: min(96vw, 500px);
-            aspect-ratio: 1 / 1;
-            border: 2px solid var(--accent-gold);
-            border-radius: 8px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.5);
-        }
-        .board-center {
-            grid-column: 2 / 11;
-            grid-row: 2 / 11;
-            background: rgba(0,0,0,0.4);
-            display: flex;
-            flex-direction: column;
             align-items: center;
-            justify-content: center;
-            padding: 10px;
-            text-align: center;
-            border-radius: 6px;
-            z-index: 1;
-        }
-        .board-space {
-            background: rgba(255,255,255,0.07);
-            border: 0.5px solid rgba(255,255,255,0.12);
-            padding: 1px;
-            font-size: 0.5rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: space-between;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-        .board-space.highlighted { border: 2px solid var(--accent-gold); background: rgba(244, 208, 63, 0.2); }
-        .prop-color { height: 5px; width: 100%; border-radius: 1px; margin-bottom: 1px; }
-        .space-name { font-weight: 700; font-size: 0.5rem; line-height: 1; transform: scale(0.9); }
-        .space-tokens { display: flex; flex-wrap: wrap; justify-content: center; gap: 1px; max-height: 18px; overflow: hidden; }
-        .token-marker { font-size: 0.85rem; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
-
-        /* Game Interactive Panels below board */
-        .game-controls-section {
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            max-width: 500px;
-            margin: 0 auto;
-            width: 100%;
-        }
-        .dice-action-box {
-            background: rgba(0,0,0,0.3);
-            border: 1px solid var(--glass-border);
-            border-radius: var(--border-radius);
-            padding: 15px;
-            text-align: center;
-        }
-        .dice-flex { display: flex; justify-content: center; gap: 15px; font-size: 2rem; margin: 10px 0; }
-        .die-box { background: white; color: var(--primary-dark); width: 48px; height: 48px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
-
-        .players-compact-list {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
             gap: 10px;
+            width: 100%;
+            margin-bottom: 15px;
+            color: white;
+            text-transform: uppercase;
         }
-        .player-mini-card {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid var(--glass-border);
-            border-radius: 8px;
-            padding: 10px;
+        .btn:active { transform: scale(0.96); }
+        .btn-primary { background: var(--primary); box-shadow: 0 4px 0 #c2410c; }
+        .btn-primary:active { transform: translateY(4px) scale(0.98); box-shadow: 0 0 0 #c2410c; }
+        .btn-secondary { background: var(--secondary); box-shadow: 0 4px 0 #1d4ed8; }
+        .btn-secondary:active { transform: translateY(4px) scale(0.98); box-shadow: 0 0 0 #1d4ed8; }
+        .btn-danger { background: var(--danger); box-shadow: 0 4px 0 #b91c1c; }
+        .btn-danger:active { transform: translateY(4px) scale(0.98); box-shadow: 0 0 0 #b91c1c; }
+        .btn-success { background: var(--success); box-shadow: 0 4px 0 #15803d; }
+        .btn-success:active { transform: translateY(4px) scale(0.98); box-shadow: 0 0 0 #15803d; }
+        .btn-outline { background: transparent; border: 2px solid var(--border); box-shadow: none; color: var(--text-main); }
+        .btn-outline:active { background: var(--surface-light); }
+
+        .btn-small { padding: 8px 16px; font-size: 1rem; border-radius: 8px; width: auto; margin: 0;}
+
+        /* Forms & Inputs */
+        input, select, textarea {
+            width: 100%;
+            padding: 14px;
+            border-radius: 10px;
+            border: 2px solid var(--border);
+            background: var(--surface);
+            color: white;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            font-family: inherit;
+        }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); }
+        textarea { resize: vertical; min-height: 120px; }
+        .form-row { display: flex; gap: 15px; }
+        .form-row > * { flex: 1; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-muted); }
+
+        /* Checkbox Toggle */
+        .toggle-container { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; background: var(--surface); padding: 15px; border-radius: 10px; border: 2px solid var(--border); cursor: pointer;}
+        .toggle-container input[type="checkbox"] { width: 24px; height: 24px; margin: 0; cursor: pointer; accent-color: var(--primary); }
+
+        /* Cards */
+        .card {
+            background: var(--surface);
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .challenge-badge {
+            position: absolute;
+            top: -15px;
+            right: 20px;
+            background: var(--gold);
+            color: #000;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 900;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            text-transform: uppercase;
+        }
+        body.ar .challenge-badge { right: auto; left: 20px; }
+
+        /* Lists */
+        .item-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+        .list-item {
+            background: var(--surface-light);
+            padding: 15px;
+            border-radius: 10px;
             display: flex;
-            flex-direction: column;
-            gap: 4px;
-            font-size: 0.85rem;
+            justify-content: space-between;
+            align-items: center;
         }
-        .player-mini-card.active { border-color: var(--accent-gold); background: rgba(244,208,63,0.1); }
+        .list-item-title { font-weight: bold; font-size: 1.1rem; word-break: break-word; }
+        .list-item-actions { display: flex; gap: 10px; }
 
-        .gm-collapsible {
-            background: rgba(155, 89, 182, 0.1);
-            border: 1px solid var(--accent-purple);
-            border-radius: 8px;
-            padding: 12px;
+        /* Game Scoreboard */
+        .scoreboard {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding: 10px 0;
+            margin-bottom: 20px;
         }
-
-        /* Modals */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); backdrop-filter: blur(5px); z-index: 1000; display: flex; justify-content: center; align-items: flex-end; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
-        .modal-overlay.active { opacity: 1; pointer-events: auto; }
-        .modal-content { background: var(--primary-main); width: 100%; max-width: 500px; border-radius: 20px 20px 0 0; padding: 25px; border-top: 1px solid var(--glass-border); transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.1, 1, 0.1, 1); max-height: 85vh; overflow-y: auto; }
-        .modal-overlay.active .modal-content { transform: translateY(0); }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .close-modal { background: none; border: none; color: white; font-size: 1.8rem; cursor: pointer; }
-
-        @media(min-width: 600px) {
-            .modal-overlay { align-items: center; }
-            .modal-content { border-radius: var(--border-radius); border: 1px solid var(--glass-border); transform: translateY(20px); }
-            .modal-overlay.active .modal-content { transform: translateY(0); }
+        .score-card {
+            background: var(--surface-light);
+            border: 2px solid var(--border);
+            padding: 10px 20px;
+            border-radius: 12px;
+            min-width: 120px;
+            text-align: center;
+            flex-shrink: 0;
         }
+        .score-card.active { border-color: var(--primary); background: var(--surface); box-shadow: 0 0 15px rgba(249,115,22,0.3); }
+        .score-name { font-weight: 700; font-size: 1rem; color: var(--text-muted); margin-bottom: 5px;}
+        .score-points { font-weight: 900; font-size: 1.5rem; color: var(--gold); }
+
+        /* Patrol Grid */
+        .patrol-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px; }
+
+        /* Challenge Display */
+        .active-challenge {
+            background: var(--surface);
+            border: 3px solid var(--primary);
+            border-radius: 20px;
+            padding: 40px 20px;
+            text-align: center;
+            margin: 30px 0;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .active-challenge h3 { font-size: 2rem; margin-bottom: 20px; line-height: 1.4; }
+        .challenge-meta { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; font-weight: bold; color: var(--gold); font-size: 1.2rem; }
+
+        /* Timer */
+        .timer-display { font-size: 4rem; font-weight: 900; text-align: center; font-variant-numeric: tabular-nums; margin: 20px 0; color: var(--text-main); }
+        .timer-display.danger { color: var(--danger); animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        .timer-controls { display: flex; gap: 10px; justify-content: center; margin-bottom: 30px; }
+
+        /* Outcome Modal */
+        .outcome-msg { font-size: 2.5rem; font-weight: 900; text-align: center; margin: 40px 0; line-height: 1.3; }
+        .outcome-points { font-size: 2rem; color: var(--gold); text-align: center; font-weight: bold; margin-bottom: 40px;}
+
+        /* Winner Screen */
+        .winner-podium { display: flex; flex-direction: column; gap: 15px; margin: 40px 0; }
+        .podium-place { background: var(--surface-light); padding: 20px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; font-size: 1.5rem; font-weight: 900; border: 2px solid transparent;}
+        .podium-1 { border-color: #fbbf24; transform: scale(1.05); background: var(--surface); box-shadow: 0 0 20px rgba(251,191,36,0.2);}
+        .podium-2 { border-color: #94a3b8; }
+        .podium-3 { border-color: #b45309; }
+
+        /* Utils */
+        .hidden { display: none !important; }
+        .mt-4 { margin-top: 20px; }
+        .mb-4 { margin-bottom: 20px; }
+        .text-center { text-align: center; }
+
+        /* Confetti Canvas */
+        #confetti { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; }
+
+        /* RTL specific tweaks */
+        body.ar .btn { flex-direction: row-reverse; }
+        body.ar .list-item { flex-direction: row-reverse; }
+        body.ar .list-item-actions { flex-direction: row-reverse; }
+        body.ar .toggle-container { flex-direction: row-reverse; }
     </style>
 </head>
 <body>
+    <div class="stars" id="stars-container"></div>
+    <canvas id="confetti" class="hidden"></canvas>
 
-    <div id="toast-container"></div>
+    <div class="app-container">
+        <header>
+            <div style="font-weight: 900; font-size: 1.2rem; color: var(--primary);">🏕️ SCOUT NIGHT</div>
+            <button class="lang-btn" id="btn-lang">
+                <span id="lang-icon">🇬🇧</span> <span id="lang-text">EN</span>
+            </button>
+        </header>
 
-    <!-- =========================================================
-         VIEW: LOGIN
-         ========================================================= -->
-    <div id="view-login" class="view active">
-        <div class="glass-panel login-box">
-            <div class="logo-title">SCOUTOPOLY</div>
-            <div class="logo-subtitle">MOBILE MULTIPLAYER EXPEDITION</div>
+        <!-- SCREEN: HOME -->
+        <div id="screen-home" class="screen active">
+            <h1 data-i18n="title">🏕️ SCOUT NIGHT</h1>
+            <h2 data-i18n="subtitle">💀 THE CHAOS CHALLENGE</h2>
+            <p class="subtitle" data-i18n="funny_sub">"Your patrol has entered. Your dignity has not."</p>
             
-            <div id="login-error-box" class="login-error-box">
-                <span id="login-error-text">❌ Incorrect credentials</span>
-            </div>
-
-            <form id="login-form">
-                <input type="text" id="login-username" placeholder="Username (e.g. chef, julien)" required autocomplete="username">
-                <input type="password" id="login-password" placeholder="Password" required autocomplete="current-password">
-                <button type="submit" class="btn btn-gold" id="login-btn" style="width: 100%;">Login to Game</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- =========================================================
-         VIEW: ROOMS LOBBY & CHARACTER SELECTION
-         ========================================================= -->
-    <div id="view-rooms" class="view">
-        <nav class="navbar">
-            <div class="nav-brand">⛺ SCOUTOPOLY LOBBY</div>
-            <button class="btn btn-outline" onclick="scoutopolyApp.logout()" style="padding: 6px 12px; font-size: 0.8rem; min-height: 36px;">Logout</button>
-        </nav>
-        <div class="dashboard-content">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <h2>Active Expeditions</h2>
-                <button class="btn btn-gold" onclick="scoutopolyApp.openCreateRoomModal()" style="padding: 8px 16px; font-size: 0.85rem; min-height: 40px;">+ Create Room</button>
-            </div>
-            <div class="rooms-grid" id="rooms-list-container">
-                <div class="glass-panel room-card">Loading game rooms...</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- =========================================================
-         VIEW: LOBBY CHARACTER SELECTION (Inside Room)
-         ========================================================= -->
-    <div id="view-room-lobby" class="view">
-        <nav class="navbar">
-            <div class="nav-brand">⛺ <span id="lobby-room-title">Room Lobby</span></div>
-            <button class="btn btn-danger" onclick="scoutopolyApp.leaveRoom()" style="padding: 6px 12px; font-size: 0.8rem; min-height: 36px;">Leave</button>
-        </nav>
-        <div class="dashboard-content">
-            <h3 style="color: var(--accent-gold); margin-bottom: 10px;">CHOOSE YOUR SCOUT CHARACTER</h3>
-            <p style="font-size: 0.85srem; color: rgba(255,255,255,0.7); margin-bottom: 15px;">Select your unique Scout piece for the entire game[cite: 6].</p>
-            
-            <div class="character-select-grid" id="character-grid-container">
-                <!-- Populated by JS -->
-            </div>
-
-            <div style="margin-top: 25px;" id="gm-lobby-controls" class="hidden">
-                <button class="btn btn-cyan" onclick="scoutopolyApp.gmStartGame()" style="width: 100%;">▶ START GAME EXPEDITION</button>
-            </div>
-            <div style="margin-top: 25px; text-align: center;" id="player-lobby-waiting">
-                <p style="color: var(--accent-cyan); font-weight: 600;" id="lobby-status-text">Select your character and wait for Game Master to start...</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- =========================================================
-         VIEW: GAME BOARD (MOBILE-FIRST)
-         ========================================================= -->
-    <div id="view-board" class="view">
-        <div class="game-header-banner">
-            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem;">
-                <span style="font-weight: 800; color: var(--accent-gold);" id="board-room-name">Scoutopoly</span>
-                <span id="board-player-coins" style="font-weight: bold; color: var(--accent-cyan);">💰 1,500 Coins</span>
-                <button class="btn btn-danger" onclick="scoutopolyApp.leaveRoom()" style="padding: 4px 8px; font-size: 0.75rem; min-height: 30px;">Exit</button>
-            </div>
+            <button class="btn btn-primary mt-4" id="btn-go-setup" style="padding: 25px; font-size: 1.5rem;">
+                <span data-i18n="start_game">🚀 START GAME</span>
+            </button>
+            <button class="btn btn-secondary" id="btn-go-library">
+                <span data-i18n="library">🗂️ CHALLENGE LIBRARY</span>
+            </button>
+            <button class="btn btn-outline" id="btn-resume-game" style="display: none;">
+                <span data-i18n="resume_game">▶️ RESUME GAME</span>
+            </button>
         </div>
 
-        <!-- Dynamic Turn Banner -->
-        <div class="turn-banner" id="current-turn-banner">
-            ⏳ WAITING FOR TURN...
-        </div>
+        <!-- SCREEN: CHALLENGE LIBRARY -->
+        <div id="screen-library" class="screen">
+            <h2 data-i18n="library">🗂️ CHALLENGE LIBRARY</h2>
+            <div class="text-center mb-4" style="font-size: 1.2rem; font-weight: bold; color: var(--gold);">
+                <span id="lib-count">0</span> <span data-i18n="challenges">CHALLENGES</span>
+            </div>
 
-        <!-- Board Arena -->
-        <div class="board-wrapper">
-            <div class="board-arena" id="scoutopoly-board-grid">
-                <div class="board-center">
-                    <div style="font-size: 1.2rem; font-weight: 800; color: var(--accent-gold);">SCOUTOPOLY</div>
-                    <div style="font-size: 0.65rem; color: var(--accent-cyan);" id="center-board-status">Adventure Awaits</div>
+            <div class="card">
+                <h3 id="form-title" data-i18n="add_challenge">✍️ ADD CHALLENGE</h3>
+                <input type="hidden" id="edit-id">
+                <label data-i18n="write_challenge">📝 WRITE YOUR CHALLENGE</label>
+                <textarea id="inp-text" placeholder="Write the challenge here..."></textarea>
+                
+                <div class="form-row">
+                    <div>
+                        <label data-i18n="select_genre">🏷️ SELECT GENRE</label>
+                        <select id="inp-genre">
+                            <!-- Populated via JS -->
+                        </select>
+                    </div>
+                    <div>
+                        <label data-i18n="points">⭐ POINTS</label>
+                        <select id="inp-points">
+                            <option value="5">5</option>
+                            <option value="7">7</option>
+                            <option value="10">10</option>
+                            <option value="12">12</option>
+                            <option value="15">15</option>
+                            <option value="20">20</option>
+                        </select>
+                    </div>
+                </div>
+
+                <label class="toggle-container">
+                    <input type="checkbox" id="inp-timer-toggle">
+                    <span data-i18n="timer_toggle" style="font-weight: bold; font-size: 1.1rem;">⏱️ Timer ON / OFF</span>
+                </label>
+                
+                <div id="timer-duration-container" class="hidden">
+                    <label data-i18n="timer_seconds">Time (Seconds)</label>
+                    <input type="number" id="inp-timer-sec" value="60" min="5" max="600">
+                </div>
+
+                <button class="btn btn-success" id="btn-save-challenge">
+                    <span data-i18n="save_challenge">💾 SAVE CHALLENGE</span>
+                </button>
+                <button class="btn btn-outline hidden" id="btn-cancel-edit">
+                    <span data-i18n="cancel">CANCEL</span>
+                </button>
+            </div>
+
+            <div class="form-row mb-4">
+                <button class="btn btn-secondary" id="btn-bulk-add">📋 <span data-i18n="bulk_add">PASTE MANY</span></button>
+                <button class="btn btn-outline" id="btn-export">📤 <span data-i18n="export">EXPORT</span></button>
+                <button class="btn btn-outline" id="btn-import-trigger">📥 <span data-i18n="import">IMPORT</span></button>
+                <input type="file" id="inp-file" accept=".json" class="hidden">
+            </div>
+
+            <div class="card">
+                <div class="form-row">
+                    <input type="text" id="search-lib" placeholder="🔎 Search challenges..." style="margin-bottom:0;">
+                    <select id="filter-genre" style="margin-bottom:0;"></select>
                 </div>
             </div>
+
+            <div id="library-list" class="item-list">
+                <!-- Loaded challenges go here -->
+            </div>
+
+            <button class="btn btn-outline mt-4" id="btn-lib-back">
+                <span data-i18n="back_home">🏠 BACK TO HOME</span>
+            </button>
         </div>
 
-        <!-- Interactive Game Controls Below Board -->
-        <div class="game-controls-section">
-            <div class="dice-action-box">
-                <h3 style="color: var(--accent-gold); font-size: 0.9rem; margin-bottom: 5px;">🎲 DICE ROLLER</h3>
-                <div class="dice-flex">
-                    <div class="die-box" id="die-1">⚀</div>
-                    <div class="die-box" id="die-2">⚀</div>
+        <!-- SCREEN: BULK ADD MODAL -->
+        <div id="screen-bulk" class="screen">
+            <h2 data-i18n="bulk_add">📋 PASTE MANY CHALLENGES</h2>
+            <p class="mb-4" style="color: var(--text-muted);" data-i18n="bulk_hint">Paste challenges, one per line. Blank lines are ignored.</p>
+            
+            <textarea id="bulk-text" style="height: 300px;" placeholder="Challenge 1...\nChallenge 2..."></textarea>
+            
+            <div class="form-row">
+                <div>
+                    <label data-i18n="select_genre">🏷️ SELECT GENRE</label>
+                    <select id="bulk-genre"></select>
                 </div>
-                <div id="dice-total-text" style="font-size: 0.85rem; font-weight: bold; color: var(--accent-cyan); margin-bottom: 12px;">TOTAL: -</div>
-                <button class="btn btn-gold" id="roll-dice-btn" onclick="scoutopolyApp.rollDice()" style="width: 100%;" disabled>ROLL DICE</button>
+                <div>
+                    <label data-i18n="points">⭐ POINTS</label>
+                    <select id="bulk-points">
+                        <option value="5">5</option>
+                        <option value="7">7</option>
+                        <option value="10" selected>10</option>
+                        <option value="12">12</option>
+                        <option value="15">15</option>
+                        <option value="20">20</option>
+                    </select>
+                </div>
+            </div>
+            
+            <label class="toggle-container">
+                <input type="checkbox" id="bulk-timer-toggle">
+                <span data-i18n="timer_toggle" style="font-weight: bold;">⏱️ Timer ON / OFF</span>
+            </label>
+            <div id="bulk-timer-duration-container" class="hidden">
+                <label data-i18n="timer_seconds">Time (Seconds)</label>
+                <input type="number" id="bulk-timer-sec" value="60">
             </div>
 
-            <!-- Players Compact List -->
-            <div>
-                <h3 style="color: var(--accent-gold); font-size: 0.85rem; margin-bottom: 8px;">👥 PLAYERS</h3>
-                <div class="players-compact-list" id="game-players-list"></div>
+            <div id="bulk-progress" class="text-center mb-4" style="font-size: 1.2rem; font-weight: bold; color: var(--gold);"></div>
+
+            <button class="btn btn-success" id="btn-bulk-save"><span data-i18n="add_all">➕ ADD ALL</span></button>
+            <button class="btn btn-outline" id="btn-bulk-cancel"><span data-i18n="cancel">CANCEL</span></button>
+        </div>
+
+        <!-- SCREEN: SETUP PATROLS -->
+        <div id="screen-setup" class="screen">
+            <h2 data-i18n="create_patrols">🏕️ CREATE YOUR PATROLS</h2>
+            
+            <div class="form-row mb-4">
+                <input type="text" id="inp-patrol-name" placeholder="E.g., Wolves, Eagles..." style="margin-bottom:0;">
+                <button class="btn btn-secondary btn-small" id="btn-add-patrol" style="flex: 0 0 auto;">➕ <span data-i18n="add">ADD</span></button>
             </div>
 
-            <!-- GM Controls (Collapsible) -->
-            <div id="gm-game-controls" class="hidden gm-collapsible">
-                <h3 style="color: var(--accent-purple); font-size: 0.85rem; margin-bottom: 8px;">👑 GAME MASTER CONTROLS</h3>
-                <button class="btn btn-danger" onclick="scoutopolyApp.gmEndGame()" style="width: 100%; font-size: 0.8rem; min-height: 38px;">🛑 End Game Room</button>
+            <div id="setup-patrol-list" class="item-list mb-4">
+                <!-- Patrols go here -->
+            </div>
+
+            <button class="btn btn-primary" id="btn-start-chaos" style="padding: 20px; font-size: 1.4rem;">
+                <span data-i18n="start_chaos">🔥 START CHAOS</span>
+            </button>
+            <button class="btn btn-outline" id="btn-setup-back">
+                <span data-i18n="back_home">🏠 BACK</span>
+            </button>
+        </div>
+
+        <!-- GAME: SELECT PATROL -->
+        <div id="screen-select-patrol" class="screen">
+            <!-- Global Scoreboard -->
+            <div class="scoreboard" id="global-scoreboard-1"></div>
+            
+            <h2 data-i18n="who_enters">WHO IS ENTERING THE CHAOS?</h2>
+            
+            <div class="patrol-grid" id="game-patrol-grid">
+                <!-- Big patrol buttons -->
+            </div>
+
+            <button class="btn btn-outline mt-4" id="btn-end-game">
+                <span data-i18n="finish_game">🏁 FINISH GAME</span>
+            </button>
+        </div>
+
+        <!-- GAME: SELECTING ANIMATION -->
+        <div id="screen-selecting" class="screen" style="justify-content: center; align-items: center;">
+            <h1 data-i18n="selecting_fate" style="animation: pulse 0.5s infinite alternate;">🎲 SELECTING YOUR FATE...</h1>
+        </div>
+
+        <!-- GAME: ACTIVE CHALLENGE -->
+        <div id="screen-challenge" class="screen">
+            <div class="scoreboard" id="global-scoreboard-2"></div>
+            
+            <h2 id="active-patrol-title" style="color: var(--primary);">🐺 WOLVES</h2>
+
+            <div class="active-challenge">
+                <div class="challenge-badge" id="active-badge">😈 NAUGHTY</div>
+                <div class="challenge-meta">
+                    <span id="active-points-display">⭐ 10 POINTS</span>
+                </div>
+                <h3 id="active-text">Challenge text here...</h3>
+            </div>
+
+            <div id="timer-section" class="mb-4">
+                <div class="text-center" style="font-weight: bold; color: var(--text-muted); font-size: 1.2rem;" id="timer-label">⏱️ <span data-i18n="timer">TIMER</span></div>
+                <div class="timer-display" id="timer-display">60</div>
+                <div class="timer-controls">
+                    <button class="btn btn-success btn-small" id="btn-timer-start">▶️ <span data-i18n="start">START</span></button>
+                    <button class="btn btn-secondary btn-small" id="btn-timer-pause">⏸️ <span data-i18n="pause">PAUSE</span></button>
+                    <button class="btn btn-outline btn-small" id="btn-timer-reset">🔄 <span data-i18n="reset">RESET</span></button>
+                </div>
+            </div>
+            
+            <div id="no-timer-section" class="text-center mb-4 hidden" style="font-size: 1.2rem; color: var(--text-muted); font-weight: bold;">
+                <span data-i18n="no_timer">⏱️ NO TIMER</span>
+            </div>
+
+            <div class="form-row">
+                <button class="btn btn-success" id="btn-made-it" style="font-size: 1.5rem; padding: 25px;">
+                    ✅ <span data-i18n="made_it">MADE IT</span>
+                </button>
+                <button class="btn btn-danger" id="btn-lost-it" style="font-size: 1.5rem; padding: 25px;">
+                    ❌ <span data-i18n="lost_it">LOST IT</span>
+                </button>
             </div>
         </div>
-    </div>
 
-    <!-- =========================================================
-         MODALS
-         ========================================================= -->
-    <!-- Create Room Modal -->
-    <div class="modal-overlay" id="create-room-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 style="color: var(--accent-gold);">⛺ Create Game Room</h3>
-                <button class="close-modal" onclick="scoutopolyApp.closeModal('create-room-modal')">&times;</button>
-            </div>
-            <form id="create-room-form">
-                <label style="font-size:0.85rem; display:block; margin-bottom:5px;">Room Name</label>
-                <input type="text" id="room-name-input" value="Scout Expedition 1" required>
-                <label style="font-size:0.85rem; display:block; margin-bottom:5px;">Starting Coins</label>
-                <input type="number" id="room-coins-input" value="1500" step="100" required>
-                <button type="submit" class="btn btn-gold" style="width: 100%;">CREATE & ENTER</button>
-            </form>
+        <!-- GAME: OUTCOME -->
+        <div id="screen-outcome" class="screen" style="justify-content: center;">
+            <div class="scoreboard" id="global-scoreboard-3"></div>
+            
+            <div class="outcome-msg" id="outcome-message">🔥 ABSOLUTE CINEMA.</div>
+            <div class="outcome-points" id="outcome-points-awarded">+10 POINTS</div>
+            
+            <button class="btn btn-primary" id="btn-next-challenge" style="font-size: 1.5rem; padding: 20px;">
+                🎲 <span data-i18n="next_challenge">NEXT CHALLENGE</span>
+            </button>
         </div>
-    </div>
 
-    <!-- Property / Event Action Modal -->
-    <div class="modal-overlay" id="property-action-modal">
-        <div class="modal-content" style="text-align: center;">
-            <div class="modal-header">
-                <h3 id="prop-modal-title" style="color: var(--accent-gold);">Property Action</h3>
-                <button class="close-modal" onclick="scoutopolyApp.closeModal('property-action-modal')">&times;</button>
+        <!-- GAME: WINNER -->
+        <div id="screen-winner" class="screen" style="justify-content: center;">
+            <h1 data-i18n="the_champions">👑 THE CHAMPIONS 👑</h1>
+            
+            <div class="winner-podium" id="winner-podium">
+                <!-- Populated via JS -->
             </div>
-            <div id="prop-modal-body" style="font-size: 0.95rem; margin-bottom: 20px; line-height: 1.5;"></div>
-            <div id="prop-modal-actions" style="display: flex; gap: 10px; justify-content: center;"></div>
+
+            <button class="btn btn-secondary mt-4" id="btn-new-game">
+                🔄 <span data-i18n="new_game">NEW GAME</span>
+            </button>
         </div>
+
     </div>
 
-    <!-- =========================================================
-         JAVASCRIPT LOGIC & FIREBASE SYNCHRONIZATION
-         ========================================================= -->
+    <!-- FIREBASE SDK IMPORTS: MUST USE CDN LINKS FOR RAW HTML FILES -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc, collection, getDocs, addDoc, query, orderBy, serverTimestamp, onSnapshot, runTransaction } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-analytics.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
+        // ==========================================
+        // 1. CONFIG & GLOBALS
+        // ==========================================
         const firebaseConfig = {
-            apiKey: "AIzaSyAHgLnVKtjPPo1vT7S48kWx8yi5Qn606vw",
+            apiKey: "AIzaSyAHgLnVKtjPP1oV7S48kWx8yi5Qn606vw",
             authDomain: "scoutopoly-eb480.firebaseapp.com",
             projectId: "scoutopoly-eb480",
             storageBucket: "scoutopoly-eb480.firebasestorage.app",
             messagingSenderId: "871413360629",
-            appId: "1:871413360629:web:4a48fd6d29aaca6ce9e2bc"
+            appId: "1:871413360629:web:4a48fd6d29aaca6ce9e2bc",
+            measurementId: "G-NGNL76ML11"
         };
 
+        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
+        const analytics = getAnalytics(app);
         const db = getFirestore(app);
+        const challengesCol = collection(db, "challenges");
 
-        // 10 Unique Scout Characters
-        const SCOUT_CHARACTERS = [
-            { id: "compassScout", name: "Compass Scout", icon: "🧭" },
-            { id: "backpackScout", name: "Backpack Scout", icon: "🎒" },
-            { id: "campScout", name: "Camp Scout", icon: "🏕️" },
-            { id: "mountainScout", name: "Mountain Scout", icon: "🥾" },
-            { id: "ropeScout", name: "Rope Scout", icon: "🪢" },
-            { id: "campfireScout", name: "Campfire Scout", icon: "🔥" },
-            { id: "badgeScout", name: "Badge Scout", icon: "🏅" },
-            { id: "explorerScout", name: "Explorer Scout", icon: "🔦" },
-            { id: "navigatorScout", name: "Navigator Scout", icon: "🗺️" },
-            { id: "adventureScout", name: "Adventure Scout", icon: "⛺" }
-        ];
-
-        const boardSpaces = [
-            { id: 0, name: "BASE CAMP", type: "base", icon: "🏕️" },
-            { id: 1, name: "Scout Trail", type: "property", group: "CAMPING", price: 60, baseRent: 6, upgradeCost: 50 },
-            { id: 2, name: "Challenge", type: "challenge", icon: "🧭" },
-            { id: 3, name: "Campsite", type: "property", group: "CAMPING", price: 60, baseRent: 10, upgradeCost: 50 },
-            { id: 4, name: "Supplies Tax", type: "tax", icon: "🎒", fee: 100 },
-            { id: 5, name: "Scout Bus", type: "transport", group: "TRANSPORT", price: 200, baseRent: 25 },
-            { id: 6, name: "Mountain Path", type: "property", group: "HIKING", price: 100, baseRent: 16, upgradeCost: 50 },
-            { id: 7, name: "Badge", type: "badge", icon: "🏅" },
-            { id: 8, name: "Hiking Trail", type: "property", group: "HIKING", price: 100, baseRent: 16, upgradeCost: 50 },
-            { id: 9, name: "Summit Camp", type: "property", group: "HIKING", price: 120, baseRent: 20, upgradeCost: 50 },
-            { id: 10, name: "CAMP PENALTY", type: "penalty", icon: "⛺" },
-            { id: 11, name: "Patrol Base", type: "property", group: "PATROL", price: 140, baseRent: 22, upgradeCost: 100 },
-            { id: 12, name: "Water Station", type: "utility", group: "UTILITY", price: 150, baseRent: 25 },
-            { id: 13, name: "Scout Hall", type: "property", group: "PATROL", price: 140, baseRent: 22, upgradeCost: 100 },
-            { id: 14, name: "First Aid", type: "property", group: "PATROL", price: 160, baseRent: 24, upgradeCost: 100 },
-            { id: 15, name: "Expedition Van", type: "transport", group: "TRANSPORT", price: 200, baseRent: 25 },
-            { id: 16, name: "Adventure", type: "property", group: "TRAINING", price: 180, baseRent: 26, upgradeCost: 100 },
-            { id: 17, name: "Challenge", type: "challenge", icon: "🧭" },
-            { id: 18, name: "Navigation", type: "property", group: "TRAINING", price: 180, baseRent: 26, upgradeCost: 100 },
-            { id: 19, name: "Summit", type: "property", group: "TRAINING", price: 200, baseRent: 28, upgradeCost: 100 },
-            { id: 20, name: "FREE CAMP", type: "free", icon: "🔥" },
-            { id: 21, name: "Kitchen", type: "property", group: "ADVENTURE", price: 220, baseRent: 32, upgradeCost: 150 },
-            { id: 22, name: "Badge", type: "badge", icon: "🏅" },
-            { id: 23, name: "Campfire", type: "property", group: "ADVENTURE", price: 220, baseRent: 32, upgradeCost: 150 },
-            { id: 24, name: "Training", type: "property", group: "ADVENTURE", price: 240, baseRent: 36, upgradeCost: 150 },
-            { id: 25, name: "Scout Bus", type: "transport", group: "TRANSPORT", price: 200, baseRent: 25 },
-            { id: 26, name: "River Crossing", type: "property", group: "EXPEDITION", price: 260, baseRent: 40, upgradeCost: 150 },
-            { id: 27, name: "Survival Camp", type: "property", group: "EXPEDITION", price: 260, baseRent: 40, upgradeCost: 150 },
-            { id: 28, name: "Equipment", type: "utility", group: "UTILITY", price: 150, baseRent: 25 },
-            { id: 29, name: "Adventure Base", type: "property", group: "EXPEDITION", price: 280, baseRent: 44, upgradeCost: 150 },
-            { id: 30, name: "GO TO PENALTY", type: "goto_penalty", icon: "🚨" },
-            { id: 31, name: "Forest Exp.", type: "property", group: "EXPEDITION", price: 300, baseRent: 50, upgradeCost: 200 },
-            { id: 32, name: "Climbing", type: "property", group: "EXPEDITION", price: 300, baseRent: 50, upgradeCost: 200 },
-            { id: 33, name: "Challenge", type: "challenge", icon: "🧭" },
-            { id: 34, name: "Grand Camp", type: "property", group: "EXPEDITION", price: 320, baseRent: 56, upgradeCost: 200 },
-            { id: 35, name: "Expedition Van", type: "transport", group: "TRANSPORT", price: 200, baseRent: 25 },
-            { id: 36, name: "Badge", type: "badge", icon: "🏅" },
-            { id: 37, name: "Headquarters", type: "property", group: "EXPEDITION", price: 350, baseRent: 70, upgradeCost: 200 },
-            { id: 38, name: "Tax", type: "tax", icon: "🎒", fee: 75 },
-            { id: 39, name: "Scout Center", type: "property", group: "EXPEDITION", price: 400, baseRent: 100, upgradeCost: 200 }
-        ];
-
-        const groupColors = { CAMPING: "#8B4513", HIKING: "#3498DB", PATROL: "#E91E63", TRAINING: "#E67E22", ADVENTURE: "#E74C3C", EXPEDITION: "#F1C40F", TRANSPORT: "#95A5A6", UTILITY: "#16A085" };
-
-        let currentUserData = null;
-        let currentGameId = null;
-        let gameUnsub = null, playersUnsub = null, propsUnsub = null;
-
-        const showToast = (msg, type = 'success') => {
-            const container = document.getElementById('toast-container');
-            const t = document.createElement('div');
-            t.className = `toast ${type}`;
-            t.innerText = msg;
-            container.appendChild(t);
-            setTimeout(() => t.remove(), 3500);
+        // App State
+        let allChallenges = [];
+        let currentLang = 'en';
+        
+        // Game State (Saved to localStorage)
+        let gameState = {
+            patrols: [], // { id, name, score }
+            usedChallenges: [], // array of IDs
+            currentScreen: 'home', // home, setup, select-patrol, challenge, outcome, winner
+            activePatrolId: null,
+            activeChallengeId: null,
+            activeOutcome: null // 'win' or 'loss'
         };
 
-        const switchView = (id) => {
-            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
+        // Genres
+        const genres = [
+            { id: 'scouts', en: '🏕️ Scouts', ar: '🏕️ كشافة' },
+            { id: 'naughty', en: '😈 Naughty', ar: '😈 مشاغب' },
+            { id: 'embarrassing', en: '😂 Embarrassing', ar: '😂 محرج' },
+            { id: 'brain', en: '🧠 Brain', ar: '🧠 ذكاء' },
+            { id: 'physical', en: '🏃 Physical', ar: '🏃 بدني' },
+            { id: 'acting', en: '🎭 Acting', ar: '🎭 تمثيل' },
+            { id: 'accuracy', en: '🎯 Accuracy', ar: '🎯 دقة' },
+            { id: 'teamwork', en: '🤝 Teamwork', ar: '🤝 عمل جماعي' },
+            { id: 'navigation', en: '🧭 Navigation', ar: '🧭 ملاحة' },
+            { id: 'survival', en: '🔥 Survival', ar: '🔥 بقاء' },
+            { id: 'performance', en: '🎤 Performance', ar: '🎤 أداء' },
+            { id: 'observation', en: '👀 Observation', ar: '👀 ملاحظة' },
+            { id: 'chaos', en: '🤯 Chaos', ar: '🤯 فوضى' },
+            { id: 'extreme', en: '💀 Extreme', ar: '💀 قاسي' },
+            { id: 'random', en: '🎲 Random', ar: '🎲 عشوائي' }
+        ];
+
+        // Dictionary
+        const i18n = {
+            title: { en: "🏕️ SCOUT NIGHT", ar: "🏕️ ليلة الكشاف" },
+            subtitle: { en: "💀 THE CHAOS CHALLENGE", ar: "💀 تحدي الفوضى" },
+            funny_sub: { en: `"Your patrol has entered. Your dignity has not."`, ar: `"دخلت طليعتك. لكن كرامتك بقيت في الخارج."` },
+            start_game: { en: "🚀 START GAME", ar: "🚀 ابدأ اللعبة" },
+            library: { en: "🗂️ CHALLENGE LIBRARY", ar: "🗂️ مكتبة التحديات" },
+            resume_game: { en: "▶️ RESUME GAME", ar: "▶️ استئناف اللعبة" },
+            challenges: { en: "CHALLENGES", ar: "تحديات" },
+            add_challenge: { en: "✍️ ADD CHALLENGE", ar: "✍️ إضافة تحدي" },
+            edit_challenge: { en: "✏️ EDIT CHALLENGE", ar: "✏️ تعديل تحدي" },
+            write_challenge: { en: "📝 WRITE YOUR CHALLENGE", ar: "📝 اكتب التحدي" },
+            select_genre: { en: "🏷️ SELECT GENRE", ar: "🏷️ اختر النوع" },
+            points: { en: "⭐ POINTS", ar: "⭐ النقاط" },
+            timer_toggle: { en: "⏱️ Timer ON / OFF", ar: "⏱️ المؤقت تشغيل/إيقاف" },
+            timer_seconds: { en: "Time (Seconds)", ar: "الوقت (ثواني)" },
+            save_challenge: { en: "💾 SAVE CHALLENGE", ar: "💾 حفظ التحدي" },
+            cancel: { en: "CANCEL", ar: "إلغاء" },
+            bulk_add: { en: "PASTE MANY", ar: "إضافة جماعية" },
+            bulk_hint: { en: "Paste challenges, one per line. Blank lines are ignored.", ar: "انسخ التحديات، كل تحدي في سطر. يتم تجاهل الأسطر الفارغة." },
+            add_all: { en: "➕ ADD ALL", ar: "➕ إضافة الكل" },
+            export: { en: "EXPORT", ar: "تصدير" },
+            import: { en: "IMPORT", ar: "استيراد" },
+            back_home: { en: "🏠 BACK TO HOME", ar: "🏠 العودة للرئيسية" },
+            create_patrols: { en: "🏕️ CREATE YOUR PATROLS", ar: "🏕️ إنشاء الطلائع" },
+            add: { en: "ADD", ar: "إضافة" },
+            start_chaos: { en: "🔥 START CHAOS", ar: "🔥 ابدأ الفوضى" },
+            who_enters: { en: "WHO IS ENTERING THE CHAOS?", ar: "من سيدخل الفوضى؟" },
+            finish_game: { en: "🏁 FINISH GAME", ar: "🏁 إنهاء اللعبة" },
+            selecting_fate: { en: "🎲 SELECTING YOUR FATE...", ar: "🎲 جاري اختيار مصيرك..." },
+            timer: { en: "TIMER", ar: "المؤقت" },
+            start: { en: "START", ar: "ابدأ" },
+            pause: { en: "PAUSE", ar: "إيقاف مؤقت" },
+            reset: { en: "RESET", ar: "إعادة ضبط" },
+            no_timer: { en: "⏱️ NO TIMER", ar: "⏱️ بدون مؤقت" },
+            made_it: { en: "MADE IT", ar: "نجحوا" },
+            lost_it: { en: "LOST IT", ar: "فشلوا" },
+            next_challenge: { en: "NEXT CHALLENGE", ar: "التحدي التالي" },
+            the_champions: { en: "👑 THE CHAMPIONS 👑", ar: "👑 الأبطال 👑" },
+            new_game: { en: "🔄 NEW GAME", ar: "🔄 لعبة جديدة" },
+            all_genres: { en: "All Genres ▼", ar: "كل الأنواع ▼" },
+            confirm_del_challenge: { en: "Delete this challenge?", ar: "هل تريد حذف هذا التحدي؟" },
+            confirm_del_patrol: { en: "Remove this patrol?", ar: "هل تريد حذف هذه الطليعة؟" },
+            confirm_finish: { en: "Are you REALLY sure? The chaos isn't over yet.", ar: "هل أنت متأكد؟ الفوضى لم تنتهِ بعد." },
+            confirm_new: { en: "Start again? All those beautiful points will disappear.", ar: "هل تريد البدء من جديد؟ كل تلك النقاط الجميلة ستختفي." },
+            no_challenges: { en: "🏆 YOU SURVIVED THE ENTIRE CHALLENGE LIBRARY!", ar: "🏆 لقد نجوت من جميع تحديات المكتبة!" },
+            btn_yes: { en: "YES, END IT", ar: "نعم، أنهِ اللعبة" },
+            btn_no: { en: "NO, I'M NOT A COWARD", ar: "لا، لست جباناً" }
         };
 
-        // Authentication State Observer with Chef Auto-Provisioning
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                let userDoc = await getDoc(doc(db, "users", user.uid));
-                if (!userDoc.exists() || user.email === 'chef@scoutopoly.local') {
-                    await setDoc(doc(db, "users", user.uid), {
-                        username: user.email.split('@')[0],
-                        displayName: user.email === 'chef@scoutopoly.local' ? 'Chief Administrator' : 'Scout Player',
-                        role: user.email === 'chef@scoutopoly.local' ? 'gameMaster' : 'player',
-                        createdAt: serverTimestamp()
-                    }, { merge: true });
-                    userDoc = await getDoc(doc(db, "users", user.uid));
-                }
-                currentUserData = { id: user.uid, ...userDoc.data() };
-                scoutopolyApp.openRoomsView();
-            } else {
-                currentUserData = null;
-                switchView('view-login');
+        const funnySuccess = [
+            { en: "🔥 ABSOLUTE CINEMA.", ar: "🔥 سينما بكل ما للكلمة من معنى." },
+            { en: "👑 SCOUTING ROYALTY.", ar: "👑 ملوك الكشافة." },
+            { en: "BRO IS HIM.", ar: "هذا هو البطل." },
+            { en: "SOMEONE CALL NASA.", ar: "فليتصل أحدكم بناسا." },
+            { en: "THAT WAS DISGUSTINGLY GOOD.", ar: "كان ذلك جيداً لدرجة مستفزة." },
+            { en: "THEY ACTUALLY DID IT.", ar: "لقد فعلوها حقاً." },
+            { en: "LEGENDS.", ar: "أساطير." }
+        ];
+
+        const funnyFail = [
+            { en: "💀 ABSOLUTE DISASTER.", ar: "💀 كارثة مطلقة." },
+            { en: "THE FLOOR WON.", ar: "الأرض هي الفائزة." },
+            { en: "WE'LL NEVER SPEAK OF THIS AGAIN.", ar: "لن نتحدث عن هذا أبداً." },
+            { en: "THEIR ANCESTORS ARE DISAPPOINTED.", ar: "أجدادهم يشعرون بخيبة أمل." },
+            { en: "0% SUCCESS. 100% CONFIDENCE.", ar: "0% نجاح. 100% ثقة." },
+            { en: "PACK IT UP.", ar: "اجمعوا أغراضكم وارحلوا." },
+            { en: "SOMEONE CHECK ON THEM.", ar: "ليطمئن أحدكم عليهم." }
+        ];
+
+        // ==========================================
+        // 2. INITIALIZATION
+        // ==========================================
+        function init() {
+            createStars();
+            loadGameState();
+            populateGenreSelects();
+            applyLanguage();
+            setupEventListeners();
+            
+            // Check resume
+            if (gameState.patrols.length > 0 && gameState.currentScreen !== 'home' && gameState.currentScreen !== 'winner') {
+                document.getElementById('btn-resume-game').style.display = 'flex';
             }
-        });
+        }
 
-        document.getElementById('login-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const u = document.getElementById('login-username').value.trim().toLowerCase();
-            const p = document.getElementById('login-password').value;
-            const errBox = document.getElementById('login-error-box');
-            errBox.style.display = 'none';
+        // ==========================================
+        // 3. UI & LANGUAGE
+        // ==========================================
+        function createStars() {
+            const container = document.getElementById('stars-container');
+            for(let i=0; i<100; i++){
+                let star = document.createElement('div');
+                star.className = 'star';
+                star.style.width = Math.random() * 3 + 'px';
+                star.style.height = star.style.width;
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                star.style.animationDelay = (Math.random() * 2) + 's';
+                container.appendChild(star);
+            }
+        }
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'en' ? 'ar' : 'en';
+            document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+            document.body.className = currentLang;
+            
+            document.getElementById('lang-icon').innerText = currentLang === 'en' ? '🇬🇧' : '🇱🇧';
+            document.getElementById('lang-text').innerText = currentLang.toUpperCase();
+            
+            populateGenreSelects();
+            applyLanguage();
+            
+            // Force redraw library and game UI if needed
+            if(allChallenges.length > 0) renderLibrary();
+            if(gameState.patrols.length > 0) {
+                renderSetupPatrols();
+                updateScoreboards();
+                renderGamePatrolGrid();
+            }
+        }
+
+        function applyLanguage() {
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (i18n[key] && i18n[key][currentLang]) {
+                    if (el.tagName === 'INPUT' && el.type === 'text') {
+                        el.placeholder = i18n[key][currentLang];
+                    } else {
+                        el.innerHTML = i18n[key][currentLang];
+                    }
+                }
+            });
+        }
+
+        function switchScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(`screen-${screenId}`).classList.add('active');
+            
+            if(['select-patrol', 'challenge', 'outcome', 'winner'].includes(screenId)) {
+                gameState.currentScreen = screenId;
+                saveGameState();
+            } else if (screenId === 'home') {
+                gameState.currentScreen = 'home';
+                saveGameState();
+            }
+            window.scrollTo(0,0);
+        }
+
+        // ==========================================
+        // 4. FIREBASE / LIBRARY LOGIC
+        // ==========================================
+        async function fetchChallenges() {
+            try {
+                const snapshot = await getDocs(challengesCol);
+                allChallenges = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                document.getElementById('lib-count').innerText = allChallenges.length;
+                renderLibrary();
+            } catch (error) {
+                console.error("Firebase Read Error:", error);
+                
+                // Detailed error mapping to help user debug their Firebase setup
+                let errorMsg = error.message;
+                if (errorMsg.includes("Missing or insufficient permissions")) {
+                    errorMsg = "Permission Denied. Please check your Firestore Security Rules in the Firebase Console. Set rules to: allow read, write: if true; (for testing only).";
+                }
+                alert(`⚠️ Firebase Connection Issue:\n\n${errorMsg}\n\nCheck browser console for more details.`);
+            }
+        }
+
+        function populateGenreSelects() {
+            const selects = ['inp-genre', 'bulk-genre', 'filter-genre'];
+            selects.forEach(id => {
+                const el = document.getElementById(id);
+                const currentVal = el.value;
+                el.innerHTML = '';
+                if(id === 'filter-genre') {
+                    el.innerHTML = `<option value="all">${i18n.all_genres[currentLang]}</option>`;
+                }
+                genres.forEach(g => {
+                    el.innerHTML += `<option value="${g.id}">${g[currentLang]}</option>`;
+                });
+                if(currentVal) el.value = currentVal;
+            });
+        }
+
+        function getGenreName(id) {
+            const g = genres.find(x => x.id === id);
+            return g ? g[currentLang] : id;
+        }
+
+        function renderLibrary() {
+            const list = document.getElementById('library-list');
+            list.innerHTML = '';
+            
+            const search = document.getElementById('search-lib').value.toLowerCase();
+            const filter = document.getElementById('filter-genre').value;
+
+            const filtered = allChallenges.filter(c => {
+                const matchSearch = c.text && c.text.toLowerCase().includes(search);
+                const matchFilter = filter === 'all' || c.genre === filter;
+                return matchSearch && matchFilter;
+            });
+
+            filtered.forEach(c => {
+                const div = document.createElement('div');
+                div.className = 'list-item';
+                div.innerHTML = `
+                    <div style="flex:1; padding-right:15px;">
+                        <div class="list-item-title">${c.text}</div>
+                        <div style="color:var(--text-muted); font-size:0.9rem; margin-top:5px;">
+                            ${getGenreName(c.genre)} | ⭐ ${c.points} ${c.timer ? `| ⏱️ ${c.timerSec}s` : ''}
+                        </div>
+                    </div>
+                    <div class="list-item-actions">
+                        <button class="btn btn-secondary btn-small" onclick="window.editCh('${c.id}')">✏️</button>
+                        <button class="btn btn-danger btn-small" onclick="window.delCh('${c.id}')">🗑️</button>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        async function saveChallenge() {
+            const text = document.getElementById('inp-text').value.trim();
+            if(!text) return;
+            const genre = document.getElementById('inp-genre').value;
+            const points = parseInt(document.getElementById('inp-points').value);
+            const timer = document.getElementById('inp-timer-toggle').checked;
+            const timerSec = parseInt(document.getElementById('inp-timer-sec').value) || 60;
+            const editId = document.getElementById('edit-id').value;
+
+            const data = { text, genre, points, timer, timerSec: timer ? timerSec : 0 };
+
+            const btn = document.getElementById('btn-save-challenge');
+            btn.disabled = true;
 
             try {
-                let email = `${u}@scoutopoly.local`;
-                if (u === 'chef') email = 'chef@scoutopoly.local';
-                try {
-                    await signInWithEmailAndPassword(auth, email, p);
-                } catch (err) {
-                    if (u === 'chef' && p === 'ch@f123') {
-                        const cred = await createUserWithEmailAndPassword(auth, 'chef@scoutopoly.local', 'ch@f123');
-                        await setDoc(doc(db, "users", cred.user.uid), { username: 'chef', displayName: 'Chief Administrator', role: 'gameMaster' });
-                        return;
-                    }
-                    // Auto signup for testing convenience
-                    const cred = await createUserWithEmailAndPassword(auth, email, p);
-                    await setDoc(doc(db, "users", cred.user.uid), { username: u, displayName: u.toUpperCase(), role: 'player' });
-                }
-            } catch (e) {
-                document.getElementById('login-error-text').innerText = "❌ " + e.message;
-                errBox.style.display = 'block';
-            }
-        });
-
-        window.scoutopolyApp = {
-            logout: () => signOut(auth),
-            closeModal: (id) => document.getElementById(id).classList.remove('active'),
-            openModal: (id) => document.getElementById(id).classList.add('active'),
-            openCreateRoomModal: () => scoutopolyApp.openModal('create-room-modal'),
-
-            openRoomsView: () => {
-                switchView('view-rooms');
-                scoutopolyApp.loadRooms();
-            },
-
-            loadRooms: async () => {
-                const container = document.getElementById('rooms-list-container');
-                try {
-                    const snap = await getDocs(collection(db, "games"));
-                    container.innerHTML = '';
-                    if (snap.empty) {
-                        container.innerHTML = '<div class="glass-panel room-card">No active expeditions. Create one above!</div>';
-                        return;
-                    }
-                    snap.forEach(d => {
-                        const r = d.data();
-                        container.innerHTML += `
-                            <div class="glass-panel room-card">
-                                <div><strong>${r.name}</strong><div style="font-size:0.75rem; color:var(--accent-cyan);">Status: ${r.status}</div></div>
-                                <button class="btn btn-cyan" onclick="scoutopolyApp.joinRoom('${d.id}')" style="padding: 8px 14px; font-size: 0.8rem; min-height: 38px;">Join</button>
-                            </div>
-                        `;
-                    });
-                } catch(e) { container.innerHTML = '<div class="glass-panel room-card">Failed to load rooms.</div>'; }
-            },
-
-            joinRoom: async (gameId) => {
-                currentGameId = gameId;
-                try {
-                    const gameDoc = await getDoc(doc(db, "games", gameId));
-                    const gameData = gameDoc.data();
-                    document.getElementById('lobby-room-title').innerText = gameData.name;
-
-                    if (gameData.status === 'playing') {
-                        scoutopolyApp.enterBoardView();
-                        return;
-                    }
-
-                    switchView('view-room-lobby');
-                    scoutopolyApp.listenToLobby(gameId);
-                } catch(e) { showToast("Failed to join room", "error"); }
-            },
-
-            listenToLobby: (gameId) => {
-                if (playersUnsub) playersUnsub();
-                playersUnsub = onSnapshot(collection(db, `games/${gameId}/players`), async (snap) => {
-                    const players = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-                    const isGM = currentUserData.role === 'gameMaster';
-                    
-                    document.getElementById('gm-lobby-controls').style.display = isGM ? 'block' : 'none';
-
-                    const grid = document.getElementById('character-grid-container');
-                    grid.innerHTML = '';
-
-                    SCOUT_CHARACTERS.forEach(scout => {
-                        const takenBy = players.find(p => p.characterId === scout.id);
-                        const isMine = takenBy && takenBy.uid === currentUserData.id;
-                        const isTaken = takenBy && !isMine;
-
-                        let cardClass = "char-card";
-                        let statusText = "[ SELECT ]";
-                        if (isMine) { cardClass += " selected"; statusText = "SELECTED ✓"; }
-                        else if (isTaken) { cardClass += " taken"; statusText = `${takenBy.username}`; }
-
-                        grid.innerHTML += `
-                            <div class="${cardClass}" ${!isTaken ? `onclick="scoutopolyApp.selectCharacter('${scout.id}')"` : ''}>
-                                <div class="char-icon">${scout.icon}</div>
-                                <div class="char-name">${scout.name}</div>
-                                <div class="char-status">${statusText}</div>
-                            </div>
-                        `;
-                    });
-
-                    const gameDoc = await getDoc(doc(db, "games", gameId));
-                    if (gameDoc.data().status === 'playing') {
-                        scoutopolyApp.enterBoardView();
-                    }
-                });
-            },
-
-            selectCharacter: async (charId) => {
-                try {
-                    const scout = SCOUT_CHARACTERS.find(s => s.id === charId);
-                    const playerRef = doc(db, `games/${currentGameId}/players`, currentUserData.id);
-                    const gameDoc = await getDoc(doc(db, "games", currentGameId));
-                    const startingCoins = gameDoc.data().startingCoins || 1500;
-
-                    await setDoc(playerRef, {
-                        uid: currentUserData.id,
-                        username: currentUserData.displayName || currentUserData.username,
-                        characterId: scout.id,
-                        token: scout.icon,
-                        position: 0,
-                        money: startingCoins,
-                        bankrupt: false
-                    }, { merge: true });
-
-                    showToast(`Selected ${scout.name}!`);
-                } catch(e) { showToast("Failed to select character", "error"); }
-            },
-
-            gmStartGame: async () => {
-                try {
-                    const playersSnap = await getDocs(collection(db, `games/${currentGameId}/players`));
-                    if (playersSnap.empty) { showToast("No players joined!", "error"); return; }
-                    
-                    const turnOrder = playersSnap.docs.map(d => d.id);
-                    // Fair random first player
-                    const startingPlayerUid = turnOrder[Math.floor(Math.random() * turnOrder.length)];
-
-                    await updateDoc(doc(db, "games", currentGameId), {
-                        status: 'playing',
-                        turnOrder: turnOrder,
-                        currentPlayerUid: startingPlayerUid,
-                        diceRolledThisTurn: false
-                    });
-                } catch(e) { showToast("Failed to start game", "error"); }
-            },
-
-            enterBoardView: () => {
-                switchView('view-board');
-                scoutopolyApp.renderBoardLayout();
-                scoutopolyApp.listenToGame();
-            },
-
-            renderBoardLayout: () => {
-                const grid = document.getElementById('scoutopoly-board-grid');
-                const center = grid.querySelector('.board-center');
-                grid.innerHTML = '';
-                grid.appendChild(center);
-
-                const getCoords = (i) => {
-                    if (i <= 10) return { row: 11, col: 11 - i };
-                    if (i <= 20) return { row: 11 - (i - 10), col: 1 };
-                    if (i <= 30) return { row: 1, col: 1 + (i - 20) };
-                    return { row: 1 + (i - 30), col: 11 };
-                };
-
-                boardSpaces.forEach(s => {
-                    const pos = getCoords(s.id);
-                    const cell = document.createElement('div');
-                    cell.className = 'board-space';
-                    cell.style.gridRow = pos.row;
-                    cell.style.gridColumn = pos.col;
-                    cell.id = `space-${s.id}`;
-
-                    const colorBar = s.group ? `<div class="prop-color" style="background: ${groupColors[s.group]}"></div>` : '';
-                    cell.innerHTML = `
-                        ${colorBar}
-                        <div class="space-name">${s.name}</div>
-                        <div style="font-size:0.75rem;">${s.icon || ''}</div>
-                        <div class="space-tokens" id="tokens-space-${s.id}"></div>
-                    `;
-                    grid.appendChild(cell);
-                });
-            },
-
-            listenToGame: () => {
-                if (gameUnsub) gameUnsub();
-                if (playersUnsub) playersUnsub();
-                if (propsUnsub) propsUnsub();
-
-                gameUnsub = onSnapshot(doc(db, "games", currentGameId), async (docSnap) => {
-                    if (!docSnap.exists()) return;
-                    const game = docSnap.data();
-                    document.getElementById('board-room-name').innerText = game.name;
-
-                    const isMyTurn = game.currentPlayerUid === currentUserData.id && !game.diceRolledThisTurn;
-                    document.getElementById('roll-dice-btn').disabled = !isMyTurn;
-
-                    const turnBanner = document.getElementById('current-turn-banner');
-                    if (game.currentPlayerUid) {
-                        const pDoc = await getDoc(doc(db, `games/${currentGameId}/players`, game.currentPlayerUid));
-                        const pName = pDoc.exists() ? pDoc.data().username : "Player";
-                        if (game.currentPlayerUid === currentUserData.id) {
-                            turnBanner.className = "turn-banner my-turn";
-                            turnBanner.innerText = "🎯 YOUR TURN TO ROLL!";
-                        } else {
-                            turnBanner.className = "turn-banner";
-                            turnBanner.innerText = `⏳ WAITING FOR ${pName.toUpperCase()}...`;
-                        }
-                    }
-
-                    if (currentUserData.role === 'gameMaster') {
-                        document.getElementById('gm-game-controls').classList.remove('hidden');
-                    }
-                });
-
-                playersUnsub = onSnapshot(collection(db, `games/${currentGameId}/players`), (snap) => {
-                    const listContainer = document.getElementById('game-players-list');
-                    listContainer.innerHTML = '';
-
-                    for (let i = 0; i < 40; i++) {
-                        const tContainer = document.getElementById(`tokens-space-${i}`);
-                        if (tContainer) tContainer.innerHTML = '';
-                    }
-
-                    snap.forEach(d => {
-                        const p = d.data();
-                        if (p.uid === currentUserData.id) {
-                            document.getElementById('board-player-coins').innerText = `💰 ${p.money} Coins`;
-                        }
-
-                        listContainer.innerHTML += `
-                            <div class="player-mini-card ${p.uid === currentUserData.id ? 'active' : ''}">
-                                <div><strong>${p.token} ${p.username}</strong></div>
-                                <div>💰 ${p.money} | Pos: ${p.position}</div>
-                            </div>
-                        `;
-
-                        const tokenContainer = document.getElementById(`tokens-space-${p.position}`);
-                        if (tokenContainer && !p.bankrupt) {
-                            tokenContainer.innerHTML += `<span class="token-marker">${p.token}</span>`;
-                        }
-                    });
-                });
-            },
-
-            rollDice: async () => {
-                document.getElementById('roll-dice-btn').disabled = true;
-                const d1 = Math.floor(Math.random() * 6) + 1;
-                const d2 = Math.floor(Math.random() * 6) + 1;
-                const total = d1 + d2;
-                
-                document.getElementById('die-1').innerText = ['⚀','⚁','⚂','⚃','⚄','⚅'][d1-1];
-                document.getElementById('die-2').innerText = ['⚀','⚁','⚂','⚃','⚄','⚅'][d2-1];
-                document.getElementById('dice-total-text').innerText = `TOTAL: ${total} ${d1 === d2 ? '(DOUBLES!)' : ''}`;
-
-                try {
-                    const playerRef = doc(db, `games/${currentGameId}/players`, currentUserData.id);
-                    const pDoc = await getDoc(playerRef);
-                    let oldPos = pDoc.data().position;
-                    let newPos = (oldPos + total) % 40;
-                    let passedBase = newPos < oldPos;
-                    let newMoney = pDoc.data().money + (passedBase ? 200 : 0);
-
-                    // Animated step-by-step movement across board spaces
-                    for (let step = 1; step <= total; step++) {
-                        let stepPos = (oldPos + step) % 40;
-                        await updateDoc(playerRef, { position: stepPos });
-                        await new Promise(r => setTimeout(r, 180));
-                    }
-
-                    await updateDoc(playerRef, { position: newPos, money: newMoney });
-                    await updateDoc(doc(db, "games", currentGameId), { diceRolledThisTurn: true });
-
-                    scoutopolyApp.handleLanding(newPos, d1 === d2);
-                } catch(e) { showToast("Error rolling dice", "error"); }
-            },
-
-            handleLanding: async (pos, isDouble) => {
-                const space = boardSpaces[pos];
-                const playerRef = doc(db, `games/${currentGameId}/players`, currentUserData.id);
-                const pData = (await getDoc(playerRef)).data();
-
-                if (space.type === 'property' || space.type === 'transport') {
-                    const propRef = doc(db, `games/${currentGameId}/properties`, String(pos));
-                    const propDoc = await getDoc(propRef);
-
-                    if (!propDoc.exists() || !propDoc.data().ownerUid) {
-                        document.getElementById('prop-modal-title').innerText = space.name;
-                        document.getElementById('prop-modal-body').innerHTML = `Price: <strong>💰${space.price}</strong><br>Buy this location?`;
-                        document.getElementById('prop-modal-actions').innerHTML = `
-                            <button class="btn btn-outline" onclick="scoutopolyApp.finishTurn(${isDouble})">Skip</button>
-                            <button class="btn btn-gold" onclick="scoutopolyApp.buyProperty(${pos}, ${space.price}, ${isDouble})">Buy</button>
-                        `;
-                        scoutopolyApp.openModal('property-action-modal');
-                        return;
-                    } else if (propDoc.data().ownerUid !== currentUserData.id) {
-                        const rent = space.baseRent;
-                        await runTransaction(db, async (t) => {
-                            const ownerRef = doc(db, `games/${currentGameId}/players`, propDoc.data().ownerUid);
-                            const ownerDoc = await t.get(ownerRef);
-                            t.update(playerRef, { money: pData.money - rent });
-                            if (ownerDoc.exists()) t.update(ownerRef, { money: ownerDoc.data().money + rent });
-                        });
-                        showToast(`Paid 💰${rent} rent!`);
-                    }
-                } else if (space.type === 'badge' || space.type === 'challenge') {
-                    const amount = space.type === 'badge' ? 100 : -50;
-                    await updateDoc(playerRef, { money: Math.max(0, pData.money + amount) });
-                    showToast(`${space.type === 'badge' ? '🏅 Badge bonus +100' : '🧭 Challenge penalty -50'}`);
-                }
-
-                // Automatically switch turn after short delay
-                setTimeout(() => scoutopolyApp.finishTurn(isDouble), 1500);
-            },
-
-            buyProperty: async (pos, price, isDouble) => {
-                scoutopolyApp.closeModal('property-action-modal');
-                const playerRef = doc(db, `games/${currentGameId}/players`, currentUserData.id);
-                const pData = (await getDoc(playerRef)).data();
-
-                if (pData.money >= price) {
-                    await runTransaction(db, async (t) => {
-                        t.update(playerRef, { money: pData.money - price });
-                        t.set(doc(db, `games/${currentGameId}/properties`, String(pos)), { ownerUid: currentUserData.id, level: 0 });
-                    });
-                    showToast("✅ Purchased!");
+                if(editId) {
+                    await updateDoc(doc(db, "challenges", editId), data);
                 } else {
-                    showToast("Not enough coins!", "error");
+                    await addDoc(challengesCol, data);
                 }
-                scoutopolyApp.finishTurn(isDouble);
-            },
+                resetForm();
+                await fetchChallenges();
+            } catch(error) {
+                console.error("Save Error:", error);
+                alert(`⚠️ Error Saving:\n\n${error.message}`);
+            }
+            btn.disabled = false;
+        }
 
-            finishTurn: async (isDouble) => {
-                try {
-                    const gameRef = doc(db, "games", currentGameId);
-                    const game = (await getDoc(gameRef)).data();
-                    const order = game.turnOrder;
-                    const nextIdx = (order.indexOf(currentUserData.id) + 1) % order.length;
+        function resetForm() {
+            document.getElementById('inp-text').value = '';
+            document.getElementById('edit-id').value = '';
+            document.getElementById('inp-timer-toggle').checked = false;
+            document.getElementById('timer-duration-container').classList.add('hidden');
+            document.getElementById('form-title').innerHTML = i18n.add_challenge[currentLang];
+            document.getElementById('btn-cancel-edit').classList.add('hidden');
+        }
 
-                    // If doubles rolled and no penalty, same player gets another turn
-                    const nextPlayer = isDouble ? currentUserData.id : order[nextIdx];
-
-                    await updateDoc(gameRef, {
-                        currentPlayerUid: nextPlayer,
-                        diceRolledThisTurn: false
-                    });
-                } catch(e) {}
-            },
-
-            gmEndGame: async () => {
-                await updateDoc(doc(db, "games", currentGameId), { status: 'ended' });
-                scoutopolyApp.openRoomsView();
-            },
-
-            leaveRoom: () => scoutopolyApp.openRoomsView()
+        window.editCh = (id) => {
+            const c = allChallenges.find(x => x.id === id);
+            if(!c) return;
+            document.getElementById('inp-text').value = c.text;
+            document.getElementById('inp-genre').value = c.genre;
+            document.getElementById('inp-points').value = c.points;
+            document.getElementById('inp-timer-toggle').checked = c.timer;
+            document.getElementById('inp-timer-sec').value = c.timerSec || 60;
+            document.getElementById('edit-id').value = c.id;
+            
+            document.getElementById('timer-duration-container').classList.toggle('hidden', !c.timer);
+            document.getElementById('form-title').innerHTML = i18n.edit_challenge[currentLang];
+            document.getElementById('btn-cancel-edit').classList.remove('hidden');
+            window.scrollTo(0,0);
         };
 
-        document.getElementById('create-room-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const name = document.getElementById('room-name-input').value.trim();
-            const startingCoins = parseInt(document.getElementById('room-coins-input').value) || 1500;
-            const ref = await addDoc(collection(db, "games"), {
-                name, startingCoins, status: 'waiting', createdBy: currentUserData.id, createdAt: serverTimestamp()
+        window.delCh = async (id) => {
+            if(confirm(i18n.confirm_del_challenge[currentLang])) {
+                try {
+                    await deleteDoc(doc(db, "challenges", id));
+                    await fetchChallenges();
+                } catch(error) {
+                    console.error("Delete Error:", error);
+                    alert(`⚠️ Error Deleting:\n\n${error.message}`);
+                }
+            }
+        };
+
+        // Bulk Logic
+        async function bulkSave() {
+            const text = document.getElementById('bulk-text').value;
+            const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+            if(lines.length === 0) return;
+
+            const genre = document.getElementById('bulk-genre').value;
+            const points = parseInt(document.getElementById('bulk-points').value);
+            const timer = document.getElementById('bulk-timer-toggle').checked;
+            const timerSec = parseInt(document.getElementById('bulk-timer-sec').value) || 60;
+
+            const progress = document.getElementById('bulk-progress');
+            const btn = document.getElementById('btn-bulk-save');
+            btn.disabled = true;
+
+            try {
+                const batchArray = [writeBatch(db)];
+                let opCount = 0;
+                let batchIndex = 0;
+
+                for(let i=0; i<lines.length; i++) {
+                    progress.innerText = `Adding ${i+1} / ${lines.length}...`;
+                    const newDoc = doc(collection(db, "challenges"));
+                    batchArray[batchIndex].set(newDoc, {
+                        text: lines[i], genre, points, timer, timerSec: timer ? timerSec : 0
+                    });
+                    opCount++;
+                    if(opCount === 450) {
+                        batchArray.push(writeBatch(db));
+                        batchIndex++;
+                        opCount = 0;
+                    }
+                }
+
+                progress.innerText = "Saving to Firebase...";
+                for(let batch of batchArray) {
+                    await batch.commit();
+                }
+
+                progress.innerText = `✅ ${lines.length} CHALLENGES ADDED!`;
+                setTimeout(() => {
+                    document.getElementById('bulk-text').value = '';
+                    progress.innerText = '';
+                    btn.disabled = false;
+                    switchScreen('library');
+                    fetchChallenges();
+                }, 1500);
+
+            } catch(error) {
+                console.error("Bulk Add Error:", error);
+                alert(`⚠️ Error during bulk add:\n\n${error.message}`);
+                btn.disabled = false;
+                progress.innerText = '';
+            }
+        }
+
+        // Export/Import
+        function exportChallenges() {
+            if(allChallenges.length === 0) return;
+            const data = allChallenges.map(c => {
+                const {id, ...rest} = c; return rest;
             });
-            scoutopolyApp.closeModal('create-room-modal');
-            scoutopolyApp.joinRoom(ref.id);
-        });
+            const blob = new Blob([JSON.stringify(data, null, 2)], {type: "application/json"});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'scout-night-challenges.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function triggerImport() {
+            document.getElementById('inp-file').click();
+        }
+
+        async function handleImport(e) {
+            const file = e.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if(!Array.isArray(imported)) return;
+                    
+                    const existingTexts = new Set(allChallenges.map(c => c.text && c.text.toLowerCase().trim()));
+                    const toAdd = imported.filter(c => c.text && !existingTexts.has(c.text.toLowerCase().trim()));
+                    
+                    if(toAdd.length === 0) {
+                        alert("No new challenges to import (duplicates ignored).");
+                        return;
+                    }
+
+                    const batchArray = [writeBatch(db)];
+                    let opCount = 0;
+                    let batchIndex = 0;
+
+                    for(let c of toAdd) {
+                        const newDoc = doc(collection(db, "challenges"));
+                        batchArray[batchIndex].set(newDoc, {
+                            text: c.text,
+                            genre: c.genre || 'random',
+                            points: parseInt(c.points) || 10,
+                            timer: !!c.timer,
+                            timerSec: parseInt(c.timerSec) || 0
+                        });
+                        opCount++;
+                        if(opCount === 450) {
+                            batchArray.push(writeBatch(db));
+                            batchIndex++;
+                            opCount = 0;
+                        }
+                    }
+                    
+                    for(let batch of batchArray) await batch.commit();
+                    alert(`✅ ${toAdd.length} challenges imported successfully!`);
+                    fetchChallenges();
+                    
+                } catch(err) {
+                    console.error("Import Error:", err);
+                    alert("Invalid JSON file or Firebase permission denied.");
+                }
+                document.getElementById('inp-file').value = ''; // reset
+            };
+            reader.readAsText(file);
+        }
+
+
+        // ==========================================
+        // 5. GAME STATE & SETUP
+        // ==========================================
+        function saveGameState() {
+            localStorage.setItem('scoutNightState', JSON.stringify(gameState));
+        }
+        function loadGameState() {
+            const saved = localStorage.getItem('scoutNightState');
+            if(saved) {
+                try {
+                    gameState = JSON.parse(saved);
+                } catch(e) {}
+            }
+        }
+
+        function addPatrol() {
+            const inp = document.getElementById('inp-patrol-name');
+            const name = inp.value.trim();
+            if(name) {
+                gameState.patrols.push({
+                    id: 'p_' + Date.now(),
+                    name: name,
+                    score: 0
+                });
+                inp.value = '';
+                saveGameState();
+                renderSetupPatrols();
+            }
+        }
+
+        window.delPatrol = (id) => {
+            if(confirm(i18n.confirm_del_patrol[currentLang])) {
+                gameState.patrols = gameState.patrols.filter(p => p.id !== id);
+                saveGameState();
+                renderSetupPatrols();
+            }
+        };
+
+        function renderSetupPatrols() {
+            const list = document.getElementById('setup-patrol-list');
+            list.innerHTML = '';
+            gameState.patrols.forEach(p => {
+                const div = document.createElement('div');
+                div.className = 'list-item';
+                div.innerHTML = `
+                    <div class="list-item-title">${p.name}</div>
+                    <button class="btn btn-danger btn-small" onclick="window.delPatrol('${p.id}')">🗑️</button>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function startChaos() {
+            if(gameState.patrols.length < 2) {
+                alert(currentLang === 'ar' ? 'أضف طليعتين على الأقل' : 'Add at least 2 patrols!');
+                return;
+            }
+            if(allChallenges.length === 0) {
+                alert(currentLang === 'ar' ? 'مكتبة التحديات فارغة!' : 'Challenge library is empty!');
+                return;
+            }
+            updateScoreboards();
+            renderGamePatrolGrid();
+            switchScreen('select-patrol');
+        }
+
+        function updateScoreboards() {
+            const sorted = [...gameState.patrols].sort((a,b) => b.score - a.score);
+            const html = sorted.map(p => `
+                <div class="score-card ${p.id === gameState.activePatrolId ? 'active' : ''}">
+                    <div class="score-name">${p.name}</div>
+                    <div class="score-points">${p.score}</div>
+                </div>
+            `).join('');
+            
+            document.getElementById('global-scoreboard-1').innerHTML = html;
+            document.getElementById('global-scoreboard-2').innerHTML = html;
+            document.getElementById('global-scoreboard-3').innerHTML = html;
+        }
+
+        function renderGamePatrolGrid() {
+            const grid = document.getElementById('game-patrol-grid');
+            grid.innerHTML = '';
+            gameState.patrols.forEach(p => {
+                const btn = document.createElement('button');
+                btn.className = 'btn btn-primary';
+                btn.style.height = '100px';
+                btn.style.fontSize = '1.5rem';
+                btn.innerHTML = p.name;
+                btn.onclick = () => selectPatrolForChallenge(p.id);
+                grid.appendChild(btn);
+            });
+        }
+
+        // ==========================================
+        // 6. GAME LOOP
+        // ==========================================
+        function selectPatrolForChallenge(patrolId) {
+            gameState.activePatrolId = patrolId;
+            saveGameState();
+            switchScreen('selecting');
+            setTimeout(generateNextChallenge, 2000);
+        }
+
+        function generateNextChallenge() {
+            const available = allChallenges.filter(c => !gameState.usedChallenges.includes(c.id));
+            
+            if(available.length === 0) {
+                alert(i18n.no_challenges[currentLang]);
+                switchScreen('select-patrol');
+                return;
+            }
+
+            const randIndex = Math.floor(Math.random() * available.length);
+            const challenge = available[randIndex];
+            
+            gameState.usedChallenges.push(challenge.id);
+            gameState.activeChallengeId = challenge.id;
+            saveGameState();
+
+            displayActiveChallenge(challenge);
+        }
+
+        function displayActiveChallenge(ch) {
+            const patrol = gameState.patrols.find(p => p.id === gameState.activePatrolId);
+            
+            document.getElementById('active-patrol-title').innerText = patrol.name;
+            document.getElementById('active-badge').innerText = getGenreName(ch.genre);
+            document.getElementById('active-points-display').innerText = `⭐ ${ch.points} ${currentLang==='ar'?'نقطة':'POINTS'}`;
+            document.getElementById('active-text').innerText = ch.text;
+
+            // Timer Setup
+            resetTimer();
+            if(ch.timer) {
+                document.getElementById('timer-section').classList.remove('hidden');
+                document.getElementById('no-timer-section').classList.add('hidden');
+                timerDuration = ch.timerSec;
+                timeLeft = timerDuration;
+                updateTimerDisplay();
+            } else {
+                document.getElementById('timer-section').classList.add('hidden');
+                document.getElementById('no-timer-section').classList.remove('hidden');
+            }
+
+            updateScoreboards();
+            switchScreen('challenge');
+        }
+
+        // ==========================================
+        // 7. TIMER LOGIC
+        // ==========================================
+        let timerInterval = null;
+        let timeLeft = 0;
+        let timerDuration = 60;
+
+        function updateTimerDisplay() {
+            const display = document.getElementById('timer-display');
+            display.innerText = timeLeft;
+            if(timeLeft <= 10 && timeLeft > 0) display.classList.add('danger');
+            else display.classList.remove('danger');
+        }
+
+        function startTimer() {
+            if(timerInterval) return;
+            if(timeLeft <= 0) return;
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                if(timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    document.getElementById('timer-display').innerText = "0";
+                    setTimeout(() => alert(currentLang==='ar'?"⏰ انتهى الوقت!":"⏰ TIME'S UP!"), 100);
+                }
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            if(timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+
+        function resetTimer() {
+            pauseTimer();
+            timeLeft = timerDuration;
+            updateTimerDisplay();
+        }
+
+        // ==========================================
+        // 8. OUTCOME LOGIC
+        // ==========================================
+        function handleOutcome(isWin) {
+            pauseTimer();
+            const ch = allChallenges.find(c => c.id === gameState.activeChallengeId);
+            const patrol = gameState.patrols.find(p => p.id === gameState.activePatrolId);
+            
+            if(isWin) {
+                patrol.score += ch.points;
+                const msg = funnySuccess[Math.floor(Math.random() * funnySuccess.length)][currentLang];
+                document.getElementById('outcome-message').innerText = msg;
+                document.getElementById('outcome-points-awarded').innerText = `+${ch.points} ${currentLang==='ar'?'نقطة':'POINTS'}`;
+                document.getElementById('outcome-points-awarded').style.color = 'var(--success)';
+            } else {
+                const msg = funnyFail[Math.floor(Math.random() * funnyFail.length)][currentLang];
+                document.getElementById('outcome-message').innerText = msg;
+                document.getElementById('outcome-points-awarded').innerText = `0 ${currentLang==='ar'?'نقطة':'POINTS'}`;
+                document.getElementById('outcome-points-awarded').style.color = 'var(--danger)';
+            }
+
+            gameState.activePatrolId = null;
+            gameState.activeChallengeId = null;
+            saveGameState();
+            
+            updateScoreboards();
+            switchScreen('outcome');
+        }
+
+        // ==========================================
+        // 9. WINNER / END GAME
+        // ==========================================
+        function finishGame() {
+            const sure = confirm(i18n.confirm_finish[currentLang]);
+            if(!sure) return;
+            
+            const sorted = [...gameState.patrols].sort((a,b) => b.score - a.score);
+            const podium = document.getElementById('winner-podium');
+            podium.innerHTML = '';
+            
+            sorted.forEach((p, index) => {
+                let badge = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '🏅';
+                let style = index <= 2 ? `podium-${index+1}` : '';
+                podium.innerHTML += `
+                    <div class="podium-place ${style}">
+                        <span>${badge} ${p.name}</span>
+                        <span>${p.score}</span>
+                    </div>
+                `;
+            });
+
+            switchScreen('winner');
+            triggerConfetti();
+        }
+
+        function newGame() {
+            if(confirm(i18n.confirm_new[currentLang])) {
+                gameState = {
+                    patrols: [],
+                    usedChallenges: [],
+                    currentScreen: 'home',
+                    activePatrolId: null,
+                    activeChallengeId: null
+                };
+                saveGameState();
+                document.getElementById('btn-resume-game').style.display = 'none';
+                switchScreen('home');
+                stopConfetti();
+            }
+        }
+
+        // ==========================================
+        // 10. CONFETTI (Lightweight Canvas)
+        // ==========================================
+        let confettiInterval = null;
+        function triggerConfetti() {
+            const cvs = document.getElementById('confetti');
+            cvs.classList.remove('hidden');
+            const ctx = cvs.getContext('2d');
+            cvs.width = window.innerWidth;
+            cvs.height = window.innerHeight;
+            
+            const particles = [];
+            for(let i=0; i<150; i++) {
+                particles.push({
+                    x: Math.random() * cvs.width,
+                    y: Math.random() * cvs.height - cvs.height,
+                    r: Math.random() * 6 + 4,
+                    dx: Math.random() * 4 - 2,
+                    dy: Math.random() * 5 + 2,
+                    color: `hsl(${Math.random()*360}, 100%, 50%)`
+                });
+            }
+
+            confettiInterval = setInterval(() => {
+                ctx.clearRect(0, 0, cvs.width, cvs.height);
+                particles.forEach(p => {
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+                    ctx.fillStyle = p.color;
+                    ctx.fill();
+                    p.x += p.dx;
+                    p.y += p.dy;
+                    if(p.y > cvs.height) { p.y = -10; p.x = Math.random() * cvs.width; }
+                });
+            }, 30);
+        }
+        function stopConfetti() {
+            if(confettiInterval) clearInterval(confettiInterval);
+            document.getElementById('confetti').classList.add('hidden');
+        }
+
+        // ==========================================
+        // 11. EVENT LISTENERS SETUP
+        // ==========================================
+        function setupEventListeners() {
+            // Header
+            document.getElementById('btn-lang').addEventListener('click', toggleLanguage);
+            
+            // Home
+            document.getElementById('btn-go-setup').addEventListener('click', () => {
+                renderSetupPatrols();
+                switchScreen('setup');
+            });
+            document.getElementById('btn-go-library').addEventListener('click', () => {
+                if(allChallenges.length === 0) fetchChallenges();
+                switchScreen('library');
+            });
+            document.getElementById('btn-resume-game').addEventListener('click', () => {
+                updateScoreboards();
+                if(gameState.currentScreen === 'challenge' && gameState.activeChallengeId) {
+                    const ch = allChallenges.find(c => c.id === gameState.activeChallengeId);
+                    if(ch) displayActiveChallenge(ch);
+                    else switchScreen('select-patrol');
+                } else {
+                    switchScreen(gameState.currentScreen);
+                }
+            });
+
+            // Library
+            document.getElementById('btn-lib-back').addEventListener('click', () => switchScreen('home'));
+            document.getElementById('inp-timer-toggle').addEventListener('change', (e) => {
+                document.getElementById('timer-duration-container').classList.toggle('hidden', !e.target.checked);
+            });
+            document.getElementById('btn-save-challenge').addEventListener('click', saveChallenge);
+            document.getElementById('btn-cancel-edit').addEventListener('click', resetForm);
+            document.getElementById('search-lib').addEventListener('input', renderLibrary);
+            document.getElementById('filter-genre').addEventListener('change', renderLibrary);
+            
+            // Bulk
+            document.getElementById('btn-bulk-add').addEventListener('click', () => switchScreen('bulk'));
+            document.getElementById('btn-bulk-cancel').addEventListener('click', () => switchScreen('library'));
+            document.getElementById('bulk-timer-toggle').addEventListener('change', (e) => {
+                document.getElementById('bulk-timer-duration-container').classList.toggle('hidden', !e.target.checked);
+            });
+            document.getElementById('btn-bulk-save').addEventListener('click', bulkSave);
+
+            // Export/Import
+            document.getElementById('btn-export').addEventListener('click', exportChallenges);
+            document.getElementById('btn-import-trigger').addEventListener('click', triggerImport);
+            document.getElementById('inp-file').addEventListener('change', handleImport);
+
+            // Setup
+            document.getElementById('btn-setup-back').addEventListener('click', () => switchScreen('home'));
+            document.getElementById('btn-add-patrol').addEventListener('click', addPatrol);
+            document.getElementById('inp-patrol-name').addEventListener('keypress', (e) => { if(e.key === 'Enter') addPatrol(); });
+            document.getElementById('btn-start-chaos').addEventListener('click', startChaos);
+
+            // Game
+            document.getElementById('btn-end-game').addEventListener('click', finishGame);
+            
+            // Timer Controls
+            document.getElementById('btn-timer-start').addEventListener('click', startTimer);
+            document.getElementById('btn-timer-pause').addEventListener('click', pauseTimer);
+            document.getElementById('btn-timer-reset').addEventListener('click', resetTimer);
+
+            // Outcomes
+            document.getElementById('btn-made-it').addEventListener('click', () => handleOutcome(true));
+            document.getElementById('btn-lost-it').addEventListener('click', () => handleOutcome(false));
+            document.getElementById('btn-next-challenge').addEventListener('click', () => switchScreen('select-patrol'));
+
+            // Winner
+            document.getElementById('btn-new-game').addEventListener('click', newGame);
+        }
+
+        // Boot
+        window.addEventListener('DOMContentLoaded', init);
+        
+        // Initial Fetch
+        fetchChallenges();
+
     </script>
 </body>
 </html>
